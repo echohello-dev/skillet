@@ -1,0 +1,14 @@
+[tools]
+bun = "1.2.17"
+
+[tasks.dev]
+run = "bun src/cli.ts"
+
+[tasks.install]
+run = "bun install"
+
+[tasks.test]
+run = "mise run install && bunx vitest run"
+
+[tasks.ci]
+run = "mise run test"
