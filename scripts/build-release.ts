@@ -13,6 +13,7 @@ type BuildResult = {
 function main(): void {
   const repoRoot = process.cwd();
   const distDir = path.join(repoRoot, "dist");
+  const selectedTargets = resolveSelectedTargets(process.argv.slice(2));
 
   const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, "package.json"), "utf8")) as {
     version: string;
@@ -27,7 +28,7 @@ function main(): void {
 
   const results: BuildResult[] = [];
 
-  for (const target of RELEASE_TARGETS) {
+  for (const target of selectedTargets) {
     const artifactPath = path.join(distDir, target.artifactName);
     const metadata = [`commit=${commit}`, `builtAt=${builtAt}`, `target=${target.id}`].join(",");
 
@@ -96,7 +97,8 @@ function verifyHostArtifact(results: BuildResult[]): void {
 
   const hostResult = results.find((result) => result.id === hostId);
   if (!hostResult) {
-    throw new Error(`Missing host artifact for ${hostId}`);
+    console.log(`Skipped host smoke verification: ${hostId} not in selected target set`);
+    return;
   }
 
   const output = execFileSync(hostResult.artifactPath, ["--version"], {
@@ -113,6 +115,49 @@ function verifyHostArtifact(results: BuildResult[]): void {
   }
 
   console.log(`Verified host artifact ${hostId} reports version and metadata`);
+}
+
+function resolveSelectedTargets(argv: string[]) {
+  const selectedIds = new Set<string>();
+
+  for (let i = 0; i < argv.length; i += 1) {
+    const token = argv[i];
+    if (token.startsWith("--targets=")) {
+      for (const id of token.slice("--targets=".length).split(",")) {
+        if (id.trim().length > 0) {
+          selectedIds.add(id.trim());
+        }
+      }
+      continue;
+    }
+
+    if (token === "--targets") {
+      const value = argv[i + 1];
+      if (!value) {
+        throw new Error("Missing value for --targets");
+      }
+      for (const id of value.split(",")) {
+        if (id.trim().length > 0) {
+          selectedIds.add(id.trim());
+        }
+      }
+      i += 1;
+      continue;
+    }
+  }
+
+  if (selectedIds.size === 0) {
+    return RELEASE_TARGETS;
+  }
+
+  const filtered = RELEASE_TARGETS.filter((target) => selectedIds.has(target.id));
+  if (filtered.length !== selectedIds.size) {
+    const known = new Set(RELEASE_TARGETS.map((target) => target.id));
+    const unknown = [...selectedIds].filter((id) => !known.has(id));
+    throw new Error(`Unknown target id(s): ${unknown.join(", ")}`);
+  }
+
+  return filtered;
 }
 
 function gitShortCommit(cwd: string): string {
