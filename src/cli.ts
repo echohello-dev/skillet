@@ -1,8 +1,10 @@
 #!/usr/bin/env bun
 import { cac } from "cac";
 import { runAddCommand } from "./commands/add";
+import { runCheckCommand } from "./commands/check";
 import { runFindCommand } from "./commands/find";
 import { runInitCommand } from "./commands/init";
+import { runUpdateCommand } from "./commands/update";
 
 const COMMANDS = ["add", "find", "check", "update", "init", "generate-lock"] as const;
 type CommandName = (typeof COMMANDS)[number];
@@ -56,6 +58,14 @@ async function runCommand(command: CommandName, args: string[], flags: GlobalFla
 
   if (command === "find") {
     return runFindCommand(args, { verbose: flags.verbose });
+  }
+
+  if (command === "check") {
+    return runCheckCommand(args);
+  }
+
+  if (command === "update") {
+    return runUpdateCommand(args, { yes: flags.yes });
   }
 
   if (command === "init") {
