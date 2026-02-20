@@ -1,0 +1,78 @@
+name: Build Matrix
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            targets: linux-x64-gnu,linux-x64-musl,linux-arm64-gnu,linux-arm64-musl
+          - os: macos-latest
+            targets: darwin-arm64,darwin-x64
+          - os: windows-latest
+            targets: windows-x64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - name: Setup mise
+        uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac
+
+      - name: Build targets
+        run: mise run build -- --targets=${{ matrix.targets }}
+
+      - name: Smoke test host artifact
+        run: bun scripts/smoke-artifact.ts
+
+      - name: Write checksums
+        run: bun scripts/write-checksums.ts
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: skillet-${{ matrix.os }}
+          path: dist/*
+
+  checksums:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - name: Setup mise
+        uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac
+
+      - name: Download artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          path: .artifacts
+          merge-multiple: true
+
+      - name: Assemble combined SHA256SUMS
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          cp .artifacts/skillet-* dist/ || true
+          cp .artifacts/*.exe dist/ || true
+          cp .artifacts/build-manifest.json dist/ || true
+          bun scripts/write-checksums.ts
+
+      - name: Upload combined checksums
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: skillet-checksums
+          path: dist/SHA256SUMS
