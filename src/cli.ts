@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 import { cac } from "cac";
 import { runFindCommand } from "./commands/find";
+import { runInitCommand } from "./commands/init";
 
 const COMMANDS = ["add", "find", "check", "update", "init", "generate-lock"] as const;
 type CommandName = (typeof COMMANDS)[number];
@@ -50,6 +51,10 @@ function toGlobalFlags(options: CommandOptions): GlobalFlags {
 function runCommand(command: CommandName, args: string[], flags: GlobalFlags): number {
   if (command === "find") {
     return runFindCommand(args, { verbose: flags.verbose });
+  }
+
+  if (command === "init") {
+    return runInitCommand(args, { yes: flags.yes });
   }
 
   if (flags.verbose) {
