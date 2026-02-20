@@ -9,7 +9,8 @@
   "scripts": {
     "dev": "bun src/cli.ts",
     "test": "vitest run",
-    "build": "bun scripts/build-release.ts"
+    "build": "bun scripts/build-release.ts",
+    "render:homebrew": "bun scripts/render-homebrew-formula.ts"
   },
   "dependencies": {
     "cac": "^6.7.14",

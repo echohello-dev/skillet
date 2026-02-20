@@ -15,3 +15,6 @@ run = "mise run test"
 
 [tasks.build]
 run = "mise run install && bun scripts/build-release.ts"
+
+[tasks.render-homebrew-formula]
+run = "mise run install && bun scripts/render-homebrew-formula.ts"
