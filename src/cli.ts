@@ -31,6 +31,7 @@ const COMMAND_HELP: Record<CommandName, string> = {
 };
 
 const cli = cac("skillet");
+const GLOBAL_FLAGS = new Set(["-y", "--yes", "--verbose", "-v", "--version", "-h", "--help"]);
 
 cli
   .option("-y, --yes", "Skip confirmations")
@@ -67,13 +68,42 @@ for (const command of COMMANDS) {
   addCommand(command);
 }
 
-cli.on("command:*", (commands) => {
-  console.error(`Unknown command: ${commands.join(" ")}`);
+cli.on("command:*", (commands?: string[]) => {
+  const unknown = commands?.join(" ") || process.argv.slice(2).join(" ");
+  console.error(`Unknown command: ${unknown}`);
   cli.outputHelp();
   process.exit(1);
 });
 
-if (process.argv.length <= 2) {
+function findUnknownGlobalFlag(argv: string[]): string | undefined {
+  for (const token of argv) {
+    if (token === "--") {
+      return undefined;
+    }
+
+    if (!token.startsWith("-")) {
+      return undefined;
+    }
+
+    const flag = token.includes("=") ? token.slice(0, token.indexOf("=")) : token;
+    if (!GLOBAL_FLAGS.has(flag)) {
+      return flag;
+    }
+  }
+
+  return undefined;
+}
+
+const rawArgs = process.argv.slice(2);
+const unknownGlobalFlag = findUnknownGlobalFlag(rawArgs);
+
+if (unknownGlobalFlag) {
+  console.error(`Unknown option: ${unknownGlobalFlag}`);
+  cli.outputHelp();
+  process.exit(1);
+}
+
+if (rawArgs.length === 0) {
   cli.outputHelp();
 } else {
   cli.parse();
