@@ -41,7 +41,12 @@ Use this skill when the task is complex, multi-step, or ambiguous and needs care
    - Confirm behavior against acceptance criteria.
    - Note any remaining risks.
 
-6. **Report**
+6. **Close the loop**
+   - Ensure PR and issue linkage is explicit when applicable.
+   - Merge only after required checks pass.
+   - Confirm outcomes are reflected in docs/status where needed.
+
+7. **Report**
    - Summarize what changed and where.
    - Call out any decisions or tradeoffs.
    - Suggest next steps if needed.
