@@ -3,11 +3,13 @@ import { parse as parseYaml } from "yaml";
 
 export class SkillParseError extends Error {
   readonly field?: string;
+  readonly path?: string;
 
-  constructor(message: string, field?: string) {
+  constructor(message: string, field?: string, filePath?: string) {
     super(message);
     this.name = "SkillParseError";
     this.field = field;
+    this.path = filePath;
   }
 }
 
@@ -34,41 +36,57 @@ type ParseOptions = {
 };
 
 export function parseSkillMarkdown(markdown: string, options: ParseOptions = {}): SkillFile {
-  const { frontmatterText, body } = splitFrontmatter(markdown);
-  const data = parseYaml(frontmatterText);
+  try {
+    const { frontmatterText, body } = splitFrontmatter(markdown);
+    const data = parseYaml(frontmatterText);
 
-  if (!data || typeof data !== "object" || Array.isArray(data)) {
-    throw new SkillParseError("Frontmatter must be a YAML object");
+    if (!data || typeof data !== "object" || Array.isArray(data)) {
+      throw new SkillParseError("Frontmatter must be a YAML object");
+    }
+
+    const record = data as Record<string, unknown>;
+    const name = readStringField(record, "name", true);
+    const description = readStringField(record, "description", true);
+    const license = readStringField(record, "license");
+    const compatibility = readStringField(record, "compatibility");
+    const allowedTools = readAllowedTools(record);
+    const metadata = normalizeMetadata(record.metadata);
+
+    const expectedName = options.expectedName ?? deriveExpectedName(options.path);
+
+    validateName(name, expectedName);
+    validateDescription(description);
+    validateCompatibility(compatibility);
+
+    const frontmatter: SkillFrontmatter = {
+      name,
+      description,
+      license,
+      compatibility,
+      metadata,
+      allowedTools,
+    };
+
+    return {
+      frontmatter,
+      body,
+      isInternal: metadata?.internal === true,
+    };
+  } catch (error) {
+    if (error instanceof SkillParseError) {
+      throw withPath(error, options.path);
+    }
+
+    throw error;
+  }
+}
+
+function withPath(error: SkillParseError, filePath?: string): SkillParseError {
+  if (!filePath || error.path === filePath) {
+    return error;
   }
 
-  const record = data as Record<string, unknown>;
-  const name = readStringField(record, "name", true);
-  const description = readStringField(record, "description", true);
-  const license = readStringField(record, "license");
-  const compatibility = readStringField(record, "compatibility");
-  const allowedTools = readAllowedTools(record);
-  const metadata = normalizeMetadata(record.metadata);
-
-  const expectedName = options.expectedName ?? deriveExpectedName(options.path);
-
-  validateName(name, expectedName);
-  validateDescription(description);
-  validateCompatibility(compatibility);
-
-  const frontmatter: SkillFrontmatter = {
-    name,
-    description,
-    license,
-    compatibility,
-    metadata,
-    allowedTools,
-  };
-
-  return {
-    frontmatter,
-    body,
-    isInternal: metadata?.internal === true,
-  };
+  return new SkillParseError(error.message, error.field, filePath);
 }
 
 function splitFrontmatter(markdown: string): { frontmatterText: string; body: string } {

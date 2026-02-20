@@ -102,4 +102,21 @@ describe("parseSkillMarkdown", () => {
       "compatibility must be 1-500 characters"
     );
   });
+
+  test("includes field and path in structured errors when provided", () => {
+    const invalidDescription = VALID_SKILL.replace(
+      "description: Sample skill for testing.",
+      "description: "
+    );
+
+    try {
+      parseSkillMarkdown(invalidDescription, { path: "/tmp/sample-skill/SKILL.md" });
+      throw new Error("Expected parseSkillMarkdown to throw");
+    } catch (error) {
+      expect(error).toBeInstanceOf(SkillParseError);
+      const parseError = error as SkillParseError;
+      expect(parseError.field).toBe("description");
+      expect(parseError.path).toBe("/tmp/sample-skill/SKILL.md");
+    }
+  });
 });
