@@ -1,5 +1,6 @@
 #!/usr/bin/env bun
 import { cac } from "cac";
+import { runAddCommand } from "./commands/add";
 import { runFindCommand } from "./commands/find";
 import { runInitCommand } from "./commands/init";
 
@@ -48,7 +49,11 @@ function toGlobalFlags(options: CommandOptions): GlobalFlags {
   };
 }
 
-function runCommand(command: CommandName, args: string[], flags: GlobalFlags): number {
+async function runCommand(command: CommandName, args: string[], flags: GlobalFlags): Promise<number> {
+  if (command === "add") {
+    return runAddCommand(args, { yes: flags.yes, verbose: flags.verbose });
+  }
+
   if (command === "find") {
     return runFindCommand(args, { verbose: flags.verbose });
   }
@@ -68,8 +73,8 @@ function runCommand(command: CommandName, args: string[], flags: GlobalFlags): n
 function addCommand(command: CommandName): void {
   cli
     .command(`${command} [...args]`, COMMAND_HELP[command])
-    .action((args: string[], options: CommandOptions) => {
-      const exitCode = runCommand(command, args, toGlobalFlags(options));
+    .action(async (args: string[], options: CommandOptions) => {
+      const exitCode = await runCommand(command, args, toGlobalFlags(options));
       process.exitCode = exitCode;
     });
 }
