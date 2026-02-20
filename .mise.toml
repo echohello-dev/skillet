@@ -12,3 +12,6 @@ run = "mise run install && bunx vitest run"
 
 [tasks.ci]
 run = "mise run test"
+
+[tasks.build]
+run = "mise run install && bun scripts/build-release.ts"

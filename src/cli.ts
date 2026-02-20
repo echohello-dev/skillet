@@ -1,5 +1,6 @@
 #!/usr/bin/env bun
 import { cac } from "cac";
+import { BUILD_INFO, buildMetadataString } from "./build-info";
 import { runAddCommand } from "./commands/add";
 import { runCheckCommand } from "./commands/check";
 import { runFindCommand } from "./commands/find";
@@ -21,10 +22,13 @@ type CommandOptions = {
 
 declare const SKILLET_VERSION: string | undefined;
 
-const VERSION =
+const BASE_VERSION =
   typeof SKILLET_VERSION === "string" && SKILLET_VERSION.length > 0
     ? SKILLET_VERSION
-    : process.env.SKILLET_VERSION ?? "dev";
+    : process.env.SKILLET_VERSION ?? BUILD_INFO.version ?? "dev";
+
+const BUILD_METADATA = process.env.SKILLET_BUILD_METADATA ?? buildMetadataString(BUILD_INFO);
+const VERSION = BUILD_METADATA.length > 0 ? `${BASE_VERSION} (${BUILD_METADATA})` : BASE_VERSION;
 
 const COMMAND_HELP: Record<CommandName, string> = {
   add: "Install skills from a source",
