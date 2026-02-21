@@ -10,7 +10,7 @@ Skillet installs, discovers, and updates `SKILL.md`-based skills across supporte
 | --- | --- | --- |
 | Binary release | Download from GitHub Releases | Planned |
 | Homebrew | `brew install skillet` | Configured |
-| Chocolatey | `choco install skillet` | Planned |
+| Chocolatey | `choco install skillet` | Configured |
 | winget | `winget install skillet` | Planned |
 | npm / npx | `npx skillet ...` | Planned |
 | Docker | `docker run ... skillet ...` | Planned |
@@ -142,3 +142,4 @@ AGENTS instructions live in `AGENTS.md`.
 Distribution docs:
 
 - Homebrew: `docs/distribution/homebrew.md`
+- Chocolatey: `docs/distribution/chocolatey.md`

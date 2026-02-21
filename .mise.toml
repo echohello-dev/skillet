@@ -18,3 +18,6 @@ run = "mise run install && bun scripts/build-release.ts"
 
 [tasks.render-homebrew-formula]
 run = "mise run install && bun scripts/render-homebrew-formula.ts"
+
+[tasks.render-chocolatey-package]
+run = "mise run install && bun scripts/render-chocolatey-package.ts"
