@@ -27,3 +27,9 @@ run = "mise run install && bun scripts/render-winget-manifest.ts"
 
 [tasks.docker-smoke]
 run = "mise run build -- --targets=linux-x64-musl,linux-arm64-musl && docker build --platform=linux/amd64 -t skillet:local . && docker run --rm --platform=linux/amd64 skillet:local --help"
+
+[tasks.build-npm]
+run = "mise run install && bun scripts/build-npm-cli.ts"
+
+[tasks.npm-smoke]
+run = "mise run build-npm && npm pack >/tmp/skillet-npm-pack.log && PACKAGE=$(tail -n 1 /tmp/skillet-npm-pack.log) && npx --yes --package \"./$PACKAGE\" skillet --help && REPO_DIR=\"$PWD\" && TMP_DIR=$(mktemp -d) && (cd \"$TMP_DIR\" && bun init -y >/dev/null 2>&1 && bun add \"$REPO_DIR/$PACKAGE\" >/dev/null && bunx --bun skillet --help) && rm -rf \"$TMP_DIR\" \"$PACKAGE\""

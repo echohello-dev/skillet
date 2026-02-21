@@ -1,19 +1,28 @@
 {
   "name": "skillet",
   "version": "0.0.0",
-  "private": true,
+  "private": false,
   "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist/npm",
+    "README.md"
+  ],
   "bin": {
-    "skillet": "src/cli.ts"
+    "skillet": "dist/npm/cli.js"
   },
   "scripts": {
     "dev": "bun src/cli.ts",
     "test": "vitest run",
     "build": "bun scripts/build-release.ts",
+    "build:npm": "bun scripts/build-npm-cli.ts",
     "render:homebrew": "bun scripts/render-homebrew-formula.ts",
     "render:choco": "bun scripts/render-chocolatey-package.ts",
     "render:winget": "bun scripts/render-winget-manifest.ts",
-    "docker:smoke": "mise run docker-smoke"
+    "docker:smoke": "mise run docker-smoke",
+    "prepack": "bun scripts/build-npm-cli.ts"
   },
   "dependencies": {
     "cac": "^6.7.14",
