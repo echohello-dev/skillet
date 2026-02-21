@@ -21,3 +21,6 @@ run = "mise run install && bun scripts/render-homebrew-formula.ts"
 
 [tasks.render-chocolatey-package]
 run = "mise run install && bun scripts/render-chocolatey-package.ts"
+
+[tasks.render-winget-manifest]
+run = "mise run install && bun scripts/render-winget-manifest.ts"
