@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+  <metadata>
+    <id>skillet</id>
+    <version>0.0.0</version>
+    <title>skillet</title>
+    <authors>echohello-dev</authors>
+    <projectUrl>https://github.com/echohello-dev/skillet</projectUrl>
+    <packageSourceUrl>https://github.com/echohello-dev/skillet</packageSourceUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Portable CLI for managing agent skills.</description>
+    <tags>cli skills agent</tags>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+  </files>
+</package>
