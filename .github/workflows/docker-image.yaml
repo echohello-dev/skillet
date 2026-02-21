@@ -1,0 +1,66 @@
+name: Docker Image
+
+on:
+  release:
+    types:
+      - published
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    env:
+      IMAGE: ghcr.io/${{ github.repository_owner }}/skillet
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - name: Setup mise
+        uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac
+
+      - name: Resolve image tag
+        id: vars
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${GITHUB_REF_TYPE:-}" == "tag" ]]; then
+            TAG="${GITHUB_REF_NAME#v}"
+          else
+            TAG="sha-${GITHUB_SHA::7}"
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Build musl binaries
+        run: mise run build -- --targets=linux-x64-musl,linux-arm64-musl
+
+      - name: Authenticate to GHCR
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Build and push multi-arch image
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker buildx create --name skillet-builder --use || docker buildx use skillet-builder
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            --tag "$IMAGE:${{ steps.vars.outputs.tag }}" \
+            --push \
+            .
+
+      - name: Tag image as latest
+        if: github.event_name == 'release'
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker buildx imagetools create \
+            --tag "$IMAGE:latest" \
+            "$IMAGE:${{ steps.vars.outputs.tag }}"

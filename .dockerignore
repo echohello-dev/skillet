@@ -1,0 +1,17 @@
+.git
+.github
+docs
+node_modules
+skills
+src
+tests
+scripts
+AGENTS.md
+README.md
+package.json
+bun.lock
+tsconfig.json
+.mise.toml
+dist/*
+!dist/skillet-linux-x64-musl
+!dist/skillet-linux-arm64-musl
