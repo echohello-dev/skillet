@@ -12,7 +12,8 @@
     "build": "bun scripts/build-release.ts",
     "render:homebrew": "bun scripts/render-homebrew-formula.ts",
     "render:choco": "bun scripts/render-chocolatey-package.ts",
-    "render:winget": "bun scripts/render-winget-manifest.ts"
+    "render:winget": "bun scripts/render-winget-manifest.ts",
+    "docker:smoke": "mise run docker-smoke"
   },
   "dependencies": {
     "cac": "^6.7.14",

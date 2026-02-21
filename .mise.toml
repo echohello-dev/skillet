@@ -24,3 +24,6 @@ run = "mise run install && bun scripts/render-chocolatey-package.ts"
 
 [tasks.render-winget-manifest]
 run = "mise run install && bun scripts/render-winget-manifest.ts"
+
+[tasks.docker-smoke]
+run = "mise run build -- --targets=linux-x64-musl,linux-arm64-musl && docker build --platform=linux/amd64 -t skillet:local . && docker run --rm --platform=linux/amd64 skillet:local --help"
