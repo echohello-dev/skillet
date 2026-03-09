@@ -8,6 +8,8 @@ Skillet ships a Chocolatey package for Windows CLI installs.
 2. Render `packaging/chocolatey/` from `SHA256SUMS`.
 3. Build and push the `.nupkg` with `choco pack` and `choco push`.
 
+GitHub releases now receive the compiled `sklt` binaries plus `SHA256SUMS` from `.github/workflows/build-matrix.yaml`, so Chocolatey packaging can reuse the same published artifacts.
+
 ## Commands
 
 ```bash

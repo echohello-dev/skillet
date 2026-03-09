@@ -8,7 +8,7 @@ Skillet installs, discovers, and updates `SKILL.md`-based skills across supporte
 
 | Method | Command / Source | Status |
 | --- | --- | --- |
-| Binary release | Download from GitHub Releases | Planned |
+| Binary release | Download from GitHub Releases | Configured |
 | Homebrew | `brew install skillet` | Configured |
 | Chocolatey | `choco install skillet` | Configured |
 | winget | `winget install skillet` | Configured |
