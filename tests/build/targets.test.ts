@@ -16,13 +16,13 @@ describe("release target matrix", () => {
 
     const artifactNames = RELEASE_TARGETS.map((target) => target.artifactName);
     expect(artifactNames).toEqual([
-      "skillet-darwin-arm64",
-      "skillet-darwin-x64",
-      "skillet-windows-x64.exe",
-      "skillet-linux-x64-gnu",
-      "skillet-linux-x64-musl",
-      "skillet-linux-arm64-gnu",
-      "skillet-linux-arm64-musl",
+      "sklt-darwin-arm64",
+      "sklt-darwin-x64",
+      "sklt-windows-x64.exe",
+      "sklt-linux-x64-gnu",
+      "sklt-linux-x64-musl",
+      "sklt-linux-arm64-gnu",
+      "sklt-linux-arm64-musl",
     ]);
   });
 

@@ -7,7 +7,7 @@ function main(): void {
   const args = process.argv.slice(2);
   const version = readArg(args, "--version") ?? readVersionFromPackageJson();
   const checksumsPath = path.resolve(readArg(args, "--checksums") ?? "dist/SHA256SUMS");
-  const outputPath = path.resolve(readArg(args, "--output") ?? "packaging/homebrew/skillet.rb");
+  const outputPath = path.resolve(readArg(args, "--output") ?? "packaging/homebrew/sklt.rb");
   const releaseUrlBase =
     readArg(args, "--release-url-base") ??
     `https://github.com/echohello-dev/skillet/releases/download/v${version}`;

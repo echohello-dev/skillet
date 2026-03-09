@@ -20,6 +20,6 @@ mise run render-winget-manifest -- --version <version>
 Validation and install checks (Windows):
 
 ```powershell
-winget validate packaging/winget/<version>/echohello-dev.skillet.yaml
-winget install echohello-dev.skillet
+winget validate packaging/winget/<version>/echohello-dev.sklt.yaml
+winget install echohello-dev.sklt
 ```

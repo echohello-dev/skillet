@@ -9,11 +9,11 @@ Skillet installs, discovers, and updates `SKILL.md`-based skills across supporte
 | Method | Command / Source | Status |
 | --- | --- | --- |
 | Binary release | Download from GitHub Releases | Planned |
-| Homebrew | `brew install skillet` | Configured |
-| Chocolatey | `choco install skillet` | Configured |
-| winget | `winget install skillet` | Configured |
+| Homebrew | `brew install sklt` | Configured |
+| Chocolatey | `choco install sklt` | Configured |
+| winget | `winget install echohello-dev.sklt` | Configured |
 | npm / npx | `npx sklt ...` | Configured |
-| Docker | `docker run ... skillet ...` | Configured |
+| Docker | `docker run ... sklt ...` | Configured |
 | Local dev | `mise run dev -- --help` | Available |
 
 Current development workflow:
@@ -26,9 +26,9 @@ mise run dev -- --help
 ## CLI Usage
 
 ```bash
-skillet --help
-skillet find [query]
-skillet init [directory]
+sklt --help
+sklt find [query]
+sklt init [directory]
 ```
 
 Implemented commands:

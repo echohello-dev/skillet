@@ -13,5 +13,5 @@ bun.lock
 tsconfig.json
 .mise.toml
 dist/*
-!dist/skillet-linux-x64-musl
-!dist/skillet-linux-arm64-musl
+!dist/sklt-linux-x64-musl
+!dist/sklt-linux-arm64-musl

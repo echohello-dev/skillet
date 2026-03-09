@@ -21,11 +21,11 @@ Generate package and publish:
 ```powershell
 cd packaging/chocolatey
 choco pack
-choco push skillet.<version>.nupkg --source https://push.chocolatey.org/
+choco push sklt.<version>.nupkg --source https://push.chocolatey.org/
 ```
 
 User install command:
 
 ```powershell
-choco install skillet
+choco install sklt
 ```

@@ -1,15 +1,15 @@
-PackageIdentifier: echohello-dev.skillet
+PackageIdentifier: echohello-dev.sklt
 PackageVersion: 0.0.0
 PackageLocale: en-US
 Publisher: echohello-dev
 PublisherUrl: https://github.com/echohello-dev
 PublisherSupportUrl: https://github.com/echohello-dev/skillet/issues
 Author: echohello-dev
-PackageName: skillet
+PackageName: sklt
 PackageUrl: https://github.com/echohello-dev/skillet
 License: MIT
 ShortDescription: Portable CLI for managing agent skills.
-Moniker: skillet
+Moniker: sklt
 Tags:
   - cli
   - skills

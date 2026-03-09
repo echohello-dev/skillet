@@ -1,0 +1,13 @@
+PackageIdentifier: echohello-dev.sklt
+PackageVersion: 0.0.0
+Installers:
+  - Architecture: x64
+    InstallerType: exe
+    InstallerUrl: https://github.com/echohello-dev/skillet/releases/download/v0.0.0/sklt-windows-x64.exe
+    InstallerSha256: A47150B22C46E54301A72C44964B4BB7D5437BC1C6D64E397B38EE10EB5F6C4D
+    AppsAndFeaturesEntries:
+      - DisplayName: sklt
+Commands:
+  - sklt
+ManifestType: installer
+ManifestVersion: 1.6.0
