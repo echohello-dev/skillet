@@ -39,7 +39,7 @@ const COMMAND_HELP: Record<CommandName, string> = {
   "generate-lock": "Generate skillet.lock.yaml",
 };
 
-const cli = cac("skillet");
+const cli = cac("sklt");
 const GLOBAL_FLAGS = new Set(["-y", "--yes", "--verbose", "-v", "--version", "-h", "--help"]);
 
 cli

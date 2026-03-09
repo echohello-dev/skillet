@@ -25,7 +25,7 @@ describe("cli", () => {
 
     expect(result.status).toBe(0);
     expect(result.stdout).toContain("Usage:");
-    expect(result.stdout).toContain("$ skillet find [...args]");
+    expect(result.stdout).toContain("$ sklt find [...args]");
   });
 
   test("prints version from environment override", () => {
@@ -37,7 +37,7 @@ describe("cli", () => {
     });
 
     expect(result.status).toBe(0);
-    expect(result.stdout).toContain("skillet/1.2.3");
+    expect(result.stdout).toContain("sklt/1.2.3");
   });
 
   test("returns clear error for unknown command", () => {

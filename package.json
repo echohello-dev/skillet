@@ -1,5 +1,5 @@
 {
-  "name": "skillet",
+  "name": "sklt",
   "version": "0.0.0",
   "private": false,
   "type": "module",
@@ -11,7 +11,7 @@
     "README.md"
   ],
   "bin": {
-    "skillet": "dist/npm/cli.js"
+    "sklt": "dist/npm/cli.js"
   },
   "scripts": {
     "dev": "bun src/cli.ts",

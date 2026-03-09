@@ -11,7 +11,7 @@ run = "bun install"
 run = "mise run install && bunx vitest run"
 
 [tasks.ci]
-run = "mise run test"
+run = "mise run test && mise run npm-publish-dry-run"
 
 [tasks.build]
 run = "mise run install && bun scripts/build-release.ts"
@@ -32,4 +32,7 @@ run = "mise run build -- --targets=linux-x64-musl,linux-arm64-musl && docker bui
 run = "mise run install && bun scripts/build-npm-cli.ts"
 
 [tasks.npm-smoke]
-run = "mise run build-npm && npm pack >/tmp/skillet-npm-pack.log && PACKAGE=$(tail -n 1 /tmp/skillet-npm-pack.log) && npx --yes --package \"./$PACKAGE\" skillet --help && REPO_DIR=\"$PWD\" && TMP_DIR=$(mktemp -d) && (cd \"$TMP_DIR\" && bun init -y >/dev/null 2>&1 && bun add \"$REPO_DIR/$PACKAGE\" >/dev/null && bunx --bun skillet --help) && rm -rf \"$TMP_DIR\" \"$PACKAGE\""
+run = "mise run build-npm && npm pack >/tmp/skillet-npm-pack.log && PACKAGE=$(tail -n 1 /tmp/skillet-npm-pack.log) && npx --yes --package \"./$PACKAGE\" sklt --help && REPO_DIR=\"$PWD\" && TMP_DIR=$(mktemp -d) && (cd \"$TMP_DIR\" && bun init -y >/dev/null 2>&1 && bun add \"$REPO_DIR/$PACKAGE\" >/dev/null && bunx --bun sklt --help) && rm -rf \"$TMP_DIR\" \"$PACKAGE\""
+
+[tasks.npm-publish-dry-run]
+run = "mise run build-npm && DIST_TAG=${NPM_DIST_TAG:-dry-run} && npm publish --dry-run --access public --tag \"$DIST_TAG\""

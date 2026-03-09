@@ -17,6 +17,6 @@ describe("npm package bundle", () => {
 
     expect(result.status).toBe(0);
     expect(result.stdout).toContain("Usage:");
-    expect(result.stdout).toContain("$ skillet <command> [options]");
+    expect(result.stdout).toContain("$ sklt <command> [options]");
   });
 });
