@@ -1,2 +1,2 @@
 $ErrorActionPreference = 'Stop'
-Uninstall-BinFile -Name 'skillet'
+Uninstall-BinFile -Name 'sklt'

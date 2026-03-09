@@ -20,7 +20,7 @@ function main(): void {
   const files = renderChocolateyPackageFiles({ version, releaseUrlBase, checksumsByArtifact: checksums });
 
   fs.mkdirSync(path.join(outputDir, "tools"), { recursive: true });
-  fs.writeFileSync(path.join(outputDir, "skillet.nuspec"), files.nuspec);
+  fs.writeFileSync(path.join(outputDir, "sklt.nuspec"), files.nuspec);
   fs.writeFileSync(path.join(outputDir, "tools", "chocolateyinstall.ps1"), files.installScript);
   fs.writeFileSync(path.join(outputDir, "tools", "chocolateyuninstall.ps1"), files.uninstallScript);
   console.log(`Wrote Chocolatey package files to ${outputDir}`);

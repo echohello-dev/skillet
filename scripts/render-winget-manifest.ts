@@ -20,9 +20,9 @@ function main(): void {
   const files = renderWingetManifestFiles({ version, releaseUrlBase, checksumsByArtifact: checksums });
 
   fs.mkdirSync(outputDir, { recursive: true });
-  fs.writeFileSync(path.join(outputDir, "echohello-dev.skillet.yaml"), files.versionManifest);
-  fs.writeFileSync(path.join(outputDir, "echohello-dev.skillet.installer.yaml"), files.installerManifest);
-  fs.writeFileSync(path.join(outputDir, "echohello-dev.skillet.locale.en-US.yaml"), files.localeManifest);
+  fs.writeFileSync(path.join(outputDir, "echohello-dev.sklt.yaml"), files.versionManifest);
+  fs.writeFileSync(path.join(outputDir, "echohello-dev.sklt.installer.yaml"), files.installerManifest);
+  fs.writeFileSync(path.join(outputDir, "echohello-dev.sklt.locale.en-US.yaml"), files.localeManifest);
   console.log(`Wrote winget manifests to ${outputDir}`);
 }
 

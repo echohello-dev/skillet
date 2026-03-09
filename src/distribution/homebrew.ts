@@ -1,5 +1,5 @@
-const DARWIN_ARM64_ARTIFACT = "skillet-darwin-arm64";
-const DARWIN_X64_ARTIFACT = "skillet-darwin-x64";
+const DARWIN_ARM64_ARTIFACT = "sklt-darwin-arm64";
+const DARWIN_X64_ARTIFACT = "sklt-darwin-x64";
 
 export type HomebrewFormulaOptions = {
   version: string;
@@ -12,7 +12,7 @@ export function renderHomebrewFormula(options: HomebrewFormulaOptions): string {
   const x64Sha = requireChecksum(options.checksumsByArtifact, DARWIN_X64_ARTIFACT);
   const releaseUrlBase = options.releaseUrlBase.replace(/\/+$/, "");
 
-  return `class Skillet < Formula
+  return `class Sklt < Formula
   desc "Portable CLI for managing agent skills"
   homepage "https://github.com/echohello-dev/skillet"
   version "${options.version}"
@@ -29,11 +29,11 @@ export function renderHomebrewFormula(options: HomebrewFormulaOptions): string {
 
   def install
     artifact = Hardware::CPU.arm? ? "${DARWIN_ARM64_ARTIFACT}" : "${DARWIN_X64_ARTIFACT}"
-    bin.install artifact => "skillet"
+    bin.install artifact => "sklt"
   end
 
   test do
-    assert_match "skillet/", shell_output("#{bin}/skillet --version")
+    assert_match "sklt/", shell_output("#{bin}/sklt --version")
   end
 end
 `;

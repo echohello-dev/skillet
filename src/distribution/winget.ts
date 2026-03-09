@@ -1,5 +1,5 @@
-const WINDOWS_X64_ARTIFACT = "skillet-windows-x64.exe";
-const PACKAGE_IDENTIFIER = "echohello-dev.skillet";
+const WINDOWS_X64_ARTIFACT = "sklt-windows-x64.exe";
+const PACKAGE_IDENTIFIER = "echohello-dev.sklt";
 
 export type WingetManifestOptions = {
   version: string;
@@ -33,9 +33,9 @@ Installers:
     InstallerUrl: ${installerUrl}
     InstallerSha256: ${installerSha256}
     AppsAndFeaturesEntries:
-      - DisplayName: skillet
+      - DisplayName: sklt
 Commands:
-  - skillet
+  - sklt
 ManifestType: installer
 ManifestVersion: 1.6.0
 `,
@@ -46,11 +46,11 @@ Publisher: echohello-dev
 PublisherUrl: https://github.com/echohello-dev
 PublisherSupportUrl: https://github.com/echohello-dev/skillet/issues
 Author: echohello-dev
-PackageName: skillet
+PackageName: sklt
 PackageUrl: https://github.com/echohello-dev/skillet
 License: MIT
 ShortDescription: Portable CLI for managing agent skills.
-Moniker: skillet
+Moniker: sklt
 Tags:
   - cli
   - skills

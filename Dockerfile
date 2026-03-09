@@ -5,17 +5,17 @@ ARG TARGETARCH
 
 RUN apk add --no-cache libstdc++ libgcc
 
-COPY dist/skillet-linux-x64-musl /tmp/skillet-linux-x64-musl
-COPY dist/skillet-linux-arm64-musl /tmp/skillet-linux-arm64-musl
+COPY dist/sklt-linux-x64-musl /tmp/sklt-linux-x64-musl
+COPY dist/sklt-linux-arm64-musl /tmp/sklt-linux-arm64-musl
 
 RUN set -eux; \
   case "$TARGETARCH" in \
-    amd64) cp /tmp/skillet-linux-x64-musl /usr/local/bin/skillet ;; \
-    arm64) cp /tmp/skillet-linux-arm64-musl /usr/local/bin/skillet ;; \
+    amd64) cp /tmp/sklt-linux-x64-musl /usr/local/bin/sklt ;; \
+    arm64) cp /tmp/sklt-linux-arm64-musl /usr/local/bin/sklt ;; \
     *) echo "Unsupported TARGETARCH: $TARGETARCH" >&2; exit 1 ;; \
   esac; \
-  chmod +x /usr/local/bin/skillet; \
-  rm -f /tmp/skillet-linux-x64-musl /tmp/skillet-linux-arm64-musl
+  chmod +x /usr/local/bin/sklt; \
+  rm -f /tmp/sklt-linux-x64-musl /tmp/sklt-linux-arm64-musl
 
-ENTRYPOINT ["/usr/local/bin/skillet"]
+ENTRYPOINT ["/usr/local/bin/sklt"]
 CMD ["--help"]

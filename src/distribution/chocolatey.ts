@@ -1,4 +1,4 @@
-const WINDOWS_X64_ARTIFACT = "skillet-windows-x64.exe";
+const WINDOWS_X64_ARTIFACT = "sklt-windows-x64.exe";
 
 export type ChocolateyPackageOptions = {
   version: string;
@@ -21,9 +21,9 @@ export function renderChocolateyPackageFiles(options: ChocolateyPackageOptions):
     nuspec: `<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
   <metadata>
-    <id>skillet</id>
+    <id>sklt</id>
     <version>${options.version}</version>
-    <title>skillet</title>
+    <title>sklt</title>
     <authors>echohello-dev</authors>
     <projectUrl>https://github.com/echohello-dev/skillet</projectUrl>
     <packageSourceUrl>https://github.com/echohello-dev/skillet</packageSourceUrl>
@@ -38,17 +38,17 @@ export function renderChocolateyPackageFiles(options: ChocolateyPackageOptions):
 `,
     installScript: `$ErrorActionPreference = 'Stop'
 
-$packageName = 'skillet'
+$packageName = 'sklt'
 $toolsDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
-$binaryPath = Join-Path $toolsDir 'skillet.exe'
+$binaryPath = Join-Path $toolsDir 'sklt.exe'
 $url64 = '${downloadUrl}'
 $checksum64 = '${checksum}'
 
 Get-ChocolateyWebFile -PackageName $packageName -FileFullPath $binaryPath -Url64bit $url64 -Checksum64 $checksum64 -ChecksumType64 'sha256'
-Install-BinFile -Name 'skillet' -Path $binaryPath
+Install-BinFile -Name 'sklt' -Path $binaryPath
 `,
     uninstallScript: `$ErrorActionPreference = 'Stop'
-Uninstall-BinFile -Name 'skillet'
+Uninstall-BinFile -Name 'sklt'
 `,
   };
 }

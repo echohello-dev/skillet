@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      IMAGE: ghcr.io/${{ github.repository_owner }}/skillet
+      IMAGE: ghcr.io/${{ github.repository_owner }}/sklt
 
     steps:
       - name: Checkout
@@ -49,7 +49,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          docker buildx create --name skillet-builder --use || docker buildx use skillet-builder
+          docker buildx create --name sklt-builder --use || docker buildx use sklt-builder
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
             --tag "$IMAGE:${{ steps.vars.outputs.tag }}" \
