@@ -1,0 +1,82 @@
+name: npm Publish
+
+on:
+  release:
+    types:
+      - published
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Git ref to publish, usually a release tag like v1.0.0
+        required: true
+        type: string
+      npm_tag:
+        description: npm dist-tag to publish under
+        required: false
+        default: latest
+        type: string
+      dry_run:
+        description: Run npm publish in dry-run mode without uploading
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: npm-publish-${{ github.event_name == 'release' && github.event.release.tag_name || inputs.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: npm-publish
+
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+
+      - name: Setup mise
+        uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac
+
+      - name: Install dependencies
+        run: mise run install
+
+      - name: Validate npm package
+        run: mise run npm-smoke
+
+      - name: Check published version
+        id: package
+        shell: bash
+        run: |
+          set -euo pipefail
+          PACKAGE_NAME=$(node --print "require('./package.json').name")
+          PACKAGE_VERSION=$(node --print "require('./package.json').version")
+          if npm view "${PACKAGE_NAME}@${PACKAGE_VERSION}" version --registry=https://registry.npmjs.org >/dev/null 2>&1; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+            echo "${PACKAGE_NAME}@${PACKAGE_VERSION} is already published; skipping."
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Dry run publish
+        if: github.event_name == 'workflow_dispatch' && inputs.dry_run
+        env:
+          NPM_DIST_TAG: ${{ inputs.npm_tag == 'latest' && 'dry-run' || inputs.npm_tag }}
+        run: mise run npm-publish-dry-run
+
+      - name: Publish package
+        if: steps.package.outputs.published != 'true' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run)
+        run: npm publish --access public --tag "${{ github.event_name == 'workflow_dispatch' && inputs.npm_tag || 'latest' }}"

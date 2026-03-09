@@ -12,7 +12,7 @@ Skillet installs, discovers, and updates `SKILL.md`-based skills across supporte
 | Homebrew | `brew install skillet` | Configured |
 | Chocolatey | `choco install skillet` | Configured |
 | winget | `winget install skillet` | Configured |
-| npm / npx | `npx skillet ...` | Configured |
+| npm / npx | `npx sklt ...` | Configured |
 | Docker | `docker run ... skillet ...` | Configured |
 | Local dev | `mise run dev -- --help` | Available |
 
