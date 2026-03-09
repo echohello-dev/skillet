@@ -16,6 +16,7 @@ describe("renderWingetManifestFiles", () => {
     expect(files.installerManifest).toContain(
       "InstallerUrl: https://github.com/echohello-dev/skillet/releases/download/v1.2.3/skillet-windows-x64.exe",
     );
+    expect(files.installerManifest).toContain("InstallerType: portable");
     expect(files.installerManifest).toContain(
       "InstallerSha256: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
     );
