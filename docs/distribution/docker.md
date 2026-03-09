@@ -1,6 +1,6 @@
 # Docker Distribution
 
-Skillet publishes a Linux musl-based container image with `skillet` as the entrypoint.
+Skillet publishes a lightweight Linux musl-based GHCR image with `sklt` as the entrypoint.
 
 ## Build Inputs
 
@@ -27,6 +27,12 @@ docker buildx build \
   --push .
 ```
 
+Run it directly:
+
+```bash
+docker run --rm ghcr.io/echohello-dev/skillet:<version> --help
+```
+
 Repository automation:
 
-- `.github/workflows/docker-image.yaml` publishes `ghcr.io/<owner>/skillet:<version>` on release.
+- `.github/workflows/docker-image.yaml` publishes a multi-arch lightweight image to `ghcr.io/<owner>/skillet:<version>` and updates `:latest` for tagged releases.

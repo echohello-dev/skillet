@@ -53,6 +53,9 @@ jobs:
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
             --tag "$IMAGE:${{ steps.vars.outputs.tag }}" \
+            --label org.opencontainers.image.source="https://github.com/${{ github.repository }}" \
+            --label org.opencontainers.image.revision="${{ github.sha }}" \
+            --label org.opencontainers.image.version="${{ steps.vars.outputs.tag }}" \
             --push \
             .
 

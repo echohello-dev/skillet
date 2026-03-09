@@ -6,7 +6,7 @@ Skillet ships a Homebrew formula for direct `brew install` on macOS.
 
 1. Build release artifacts and checksums.
 2. Render `packaging/homebrew/skillet.rb` from checksums.
-3. Publish GitHub release assets for the same version.
+3. Publish GitHub release assets for the same version. `.github/workflows/build-matrix.yaml` now uploads the compiled binaries, `SHA256SUMS`, and `build-manifest.json` to the tagged GitHub release automatically.
 4. Push formula update to the tap repository.
 
 ## Commands

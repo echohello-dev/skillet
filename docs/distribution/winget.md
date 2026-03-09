@@ -9,6 +9,8 @@ Skillet ships a winget manifest set for Windows installs.
 3. Validate manifests with `winget validate`.
 4. Submit manifests to [`microsoft/winget-pkgs`](https://github.com/microsoft/winget-pkgs).
 
+The release workflow also attaches the Windows binary and `SHA256SUMS` to the matching GitHub release, which gives winget a stable download source.
+
 ## Commands
 
 ```bash
