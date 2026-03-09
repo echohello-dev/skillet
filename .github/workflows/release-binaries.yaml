@@ -1,0 +1,179 @@
+name: Release Binaries
+
+on:
+  release:
+    types:
+      - published
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Git ref to release, usually a tag like v1.0.0
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-binaries-${{ github.event_name == 'release' && github.event.release.tag_name || inputs.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            targets: linux-x64-gnu,linux-x64-musl,linux-arm64-gnu,linux-arm64-musl
+          - os: macos-latest
+            targets: darwin-arm64,darwin-x64
+          - os: windows-latest
+            targets: windows-x64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.ref }}
+
+      - name: Setup mise
+        uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac
+
+      - name: Build targets
+        run: mise run build -- --targets=${{ matrix.targets }}
+
+      - name: Smoke test host artifact
+        run: bun scripts/smoke-artifact.ts
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: release-${{ matrix.os }}
+          path: dist/*
+
+  upload:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.ref }}
+
+      - name: Setup mise
+        uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          path: .artifacts
+          merge-multiple: true
+
+      - name: Assemble release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          cp .artifacts/skillet-* dist/ || true
+          cp .artifacts/*.exe dist/ || true
+          bun scripts/write-checksums.ts
+
+      - name: Upload release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.ref }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release upload "$RELEASE_TAG" dist/skillet-* dist/*.exe dist/SHA256SUMS --clobber
+
+  verify-homebrew:
+    needs: upload
+    runs-on: macos-latest
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: 1
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.ref }}
+
+      - name: Install from Homebrew formula
+        run: brew install --formula ./packaging/homebrew/skillet.rb
+
+      - name: Verify Homebrew install
+        run: skillet --version
+
+      - name: Uninstall Homebrew formula
+        if: always()
+        run: brew uninstall skillet
+
+  verify-chocolatey:
+    needs: upload
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.ref }}
+
+      - name: Pack Chocolatey package
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist/choco | Out-Null
+          choco pack packaging/chocolatey/skillet.nuspec --outputdirectory dist/choco
+
+      - name: Install from Chocolatey package
+        shell: pwsh
+        run: |
+          choco install skillet --source "$PWD\dist\choco" --yes --no-progress
+
+      - name: Verify Chocolatey install
+        shell: pwsh
+        run: skillet --version
+
+      - name: Uninstall Chocolatey package
+        if: always()
+        shell: pwsh
+        run: |
+          choco uninstall skillet --yes --no-progress
+
+  verify-winget:
+    needs: upload
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.ref }}
+
+      - name: Validate winget manifests
+        shell: pwsh
+        run: |
+          $package = Get-Content package.json -Raw | ConvertFrom-Json
+          $manifest = Join-Path (Join-Path packaging/winget $package.version) 'echohello-dev.skillet.yaml'
+          winget validate $manifest
+
+      - name: Install from winget manifest
+        shell: pwsh
+        run: |
+          $package = Get-Content package.json -Raw | ConvertFrom-Json
+          $manifest = Join-Path (Join-Path packaging/winget $package.version) 'echohello-dev.skillet.yaml'
+          winget install --manifest $manifest --accept-source-agreements --accept-package-agreements --disable-interactivity
+
+      - name: Verify winget install
+        shell: pwsh
+        run: skillet --version
+
+      - name: Uninstall winget package
+        if: always()
+        shell: pwsh
+        run: |
+          winget uninstall --id echohello-dev.skillet --exact --disable-interactivity || exit 0

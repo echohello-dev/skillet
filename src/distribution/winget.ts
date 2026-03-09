@@ -29,11 +29,9 @@ ManifestVersion: 1.6.0
 PackageVersion: ${options.version}
 Installers:
   - Architecture: x64
-    InstallerType: exe
+    InstallerType: portable
     InstallerUrl: ${installerUrl}
     InstallerSha256: ${installerSha256}
-    AppsAndFeaturesEntries:
-      - DisplayName: skillet
 Commands:
   - skillet
 ManifestType: installer
