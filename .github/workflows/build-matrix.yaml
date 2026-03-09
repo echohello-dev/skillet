@@ -76,3 +76,155 @@ jobs:
         with:
           name: skillet-checksums
           path: dist/SHA256SUMS
+
+  qemu-smoke:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - name: Setup QEMU
+        uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e8
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Make Linux artifacts executable
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x dist/skillet-linux-*
+
+      - name: Smoke test arm64 musl artifact under emulation
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUTPUT=$(docker run --rm --platform linux/arm64/v8 -v "$PWD/dist:/artifacts:ro" alpine:3.22 /artifacts/skillet-linux-arm64-musl --version)
+          printf '%s\n' "$OUTPUT"
+          grep -F "sklt/" <<< "$OUTPUT"
+
+      - name: Smoke test arm64 gnu artifact under emulation
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUTPUT=$(docker run --rm --platform linux/arm64/v8 -v "$PWD/dist:/artifacts:ro" ubuntu:24.04 /artifacts/skillet-linux-arm64-gnu --version)
+          printf '%s\n' "$OUTPUT"
+          grep -F "sklt/" <<< "$OUTPUT"
+
+  wine-smoke:
+    needs: build
+    runs-on: ubuntu-latest
+
+    env:
+      WINEDEBUG: -all
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - name: Setup mise
+        uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac
+
+      - name: Install Wine
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y wine64
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Smoke test Windows artifact with Wine
+        run: bun scripts/smoke-artifact.ts --target=windows-x64 --artifact-dir=dist --runner=wine64
+
+  docker-integration:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - name: Setup mise
+        uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac
+
+      - name: Setup QEMU
+        uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e8
+
+      - name: Build musl binaries
+        run: mise run build -- --targets=linux-x64-musl,linux-arm64-musl
+
+      - name: Smoke test amd64 Docker image
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker buildx create --name skillet-smoke-builder --use || docker buildx use skillet-smoke-builder
+          docker buildx build --platform linux/amd64 --load -t skillet:amd64 .
+          docker run --rm --platform linux/amd64 skillet:amd64 --help
+
+      - name: Smoke test arm64 Docker image
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker buildx use skillet-smoke-builder
+          docker buildx build --platform linux/arm64 --load -t skillet:arm64 .
+          docker run --rm --platform linux/arm64 skillet:arm64 --help
+
+  packaging-validate:
+    needs: checksums
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - name: Setup mise
+        uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac
+
+      - name: Download checksum artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: skillet-checksums
+          path: dist
+
+      - name: Validate rendered packaging assets
+        run: mise run package-validate
+
+      - name: Validate Homebrew formula syntax
+        run: ruby -c packaging/homebrew/skillet.rb
+
+  windows-packaging-validate:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - name: Pack Chocolatey package
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist/choco | Out-Null
+          choco pack packaging/chocolatey/skillet.nuspec --outputdirectory dist/choco
+
+      - name: Validate Chocolatey PowerShell scripts
+        shell: pwsh
+        run: |
+          [scriptblock]::Create((Get-Content -Raw packaging/chocolatey/tools/chocolateyinstall.ps1)) | Out-Null
+          [scriptblock]::Create((Get-Content -Raw packaging/chocolatey/tools/chocolateyuninstall.ps1)) | Out-Null
+
+      - name: Validate winget manifests parse as YAML
+        shell: pwsh
+        run: |
+          $package = Get-Content package.json -Raw | ConvertFrom-Json
+          $wingetDir = Join-Path packaging/winget $package.version
+          Get-Content (Join-Path $wingetDir 'echohello-dev.skillet.yaml') -Raw | ConvertFrom-Yaml | Out-Null
+          Get-Content (Join-Path $wingetDir 'echohello-dev.skillet.installer.yaml') -Raw | ConvertFrom-Yaml | Out-Null
+          Get-Content (Join-Path $wingetDir 'echohello-dev.skillet.locale.en-US.yaml') -Raw | ConvertFrom-Yaml | Out-Null
