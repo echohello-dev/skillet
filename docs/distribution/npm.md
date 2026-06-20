@@ -1,15 +1,17 @@
 # npm Distribution
 
-Skillet publishes an npm package named `getskillet` so users can run:
+Skillet publishes the same content under two npm names so users can install with whichever they prefer:
 
-- `npx getskillet ...`
-- `bunx getskillet ...`
-- `npm i -g getskillet` then `sklt ...`
+- **`getskillet`** (primary, unscoped) — `npm i -g getskillet` or `npx getskillet ...`
+- **`@echohello/skillet`** (alias, scoped) — `npm i -g @echohello/skillet` or `npx @echohello/skillet ...`
+
+After install, the binary is the same in both cases: `sklt`.
 
 ## Packaging Model
 
 - `src/cli.ts` is bundled to `dist/npm/cli.js` targeting Node.
-- `package.json` name is `getskillet`; the `bin` field exposes `sklt` pointing to `dist/npm/cli.js`.
+- The primary `package.json` is `getskillet`; the `bin` field exposes `sklt` pointing to `dist/npm/cli.js`.
+- The CI workflow re-builds the same bundle under `dist/npm-alias/` with a rewritten `name: @echohello/skillet` and publishes it as the scoped alias. Same tarball content, different package identity.
 - `prepack` rebuilds the npm CLI bundle automatically.
 
 ## Local Validation

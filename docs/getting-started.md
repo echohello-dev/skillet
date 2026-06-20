@@ -17,7 +17,8 @@ Or pick a specific channel:
 | Channel | Command | Notes |
 | --- | --- | --- |
 | **Homebrew** | `brew install echohello-dev/tap/sklt` | macOS, Linuxbrew |
-| **npm** | `npm i -g getskillet` or use `npx getskillet` | Node 20+ |
+| **npm (unscoped)** | `npm i -g getskillet` or use `npx getskillet` | Node 20+ |
+| **npm (scoped alias)** | `npm i -g @echohello/skillet` | Same package, scoped name |
 | **Direct binary** | Download from [GitHub Releases](https://github.com/echohello-dev/skillet/releases) | Single static binary, no runtime |
 
 ### Windows
@@ -30,7 +31,8 @@ irm https://echohello.dev/sklt/install.ps1 | iex
 | --- | --- | --- |
 | **winget** | `winget install echohello-dev.sklt` | Windows 10+ |
 | **Chocolatey** | `choco install sklt` | |
-| **npm** | `npm i -g getskillet` | Node 20+ |
+| **npm (unscoped)** | `npm i -g getskillet` | Node 20+ |
+| **npm (scoped alias)** | `npm i -g @echohello/skillet` | Same package, scoped name |
 
 ### Container
 
