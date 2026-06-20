@@ -16,8 +16,8 @@ Skillet installs, discovers, and updates `SKILL.md`-based skills across Claude C
 
 ```bash
 # npm / npx (any platform with Node 20+)
-npm i -g sklt
-npx sklt --help
+npm i -g getskillet
+npx getskillet --help
 
 # macOS / Linux (Homebrew)
 brew install echohello-dev/tap/sklt

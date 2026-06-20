@@ -1,14 +1,15 @@
 # npm Distribution
 
-Skillet publishes an npm package so users can run:
+Skillet publishes an npm package named `getskillet` so users can run:
 
-- `npx sklt ...`
-- `bunx sklt ...`
+- `npx getskillet ...`
+- `bunx getskillet ...`
+- `npm i -g getskillet` then `sklt ...`
 
 ## Packaging Model
 
 - `src/cli.ts` is bundled to `dist/npm/cli.js` targeting Node.
-- `package.json` exposes `sklt` pointing to `dist/npm/cli.js`.
+- `package.json` name is `getskillet`; the `bin` field exposes `sklt` pointing to `dist/npm/cli.js`.
 - `prepack` rebuilds the npm CLI bundle automatically.
 
 ## Local Validation
@@ -16,8 +17,8 @@ Skillet publishes an npm package so users can run:
 ```bash
 mise run build-npm
 npm pack
-npx --yes --package ./sklt-<version>.tgz sklt --help
-bunx --bun --package ./sklt-<version>.tgz sklt --help
+npx --yes --package ./getskillet-<version>.tgz sklt --help
+bunx --bun --package ./getskillet-<version>.tgz sklt --help
 mise run npm-publish-dry-run
 ```
 
