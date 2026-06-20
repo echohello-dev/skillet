@@ -76,3 +76,175 @@ jobs:
         with:
           name: skillet-checksums
           path: dist/SHA256SUMS
+
+  qemu-smoke:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - name: Setup QEMU
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Make Linux artifacts executable
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x dist/skillet-linux-*
+
+      - name: Smoke test arm64 musl artifact under emulation
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUTPUT=$(docker run --rm --platform linux/arm64/v8 -v "$PWD/dist:/artifacts:ro" alpine:3.22 sh -c 'apk add --no-cache libstdc++ libgcc >/dev/null && /artifacts/skillet-linux-arm64-musl --version')
+          printf '%s\n' "$OUTPUT"
+          grep -F "sklt/" <<< "$OUTPUT"
+
+      - name: Smoke test arm64 gnu artifact under emulation
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUTPUT=$(docker run --rm --platform linux/arm64/v8 -v "$PWD/dist:/artifacts:ro" ubuntu:24.04 /artifacts/skillet-linux-arm64-gnu --version)
+          printf '%s\n' "$OUTPUT"
+          grep -F "sklt/" <<< "$OUTPUT"
+
+  wine-smoke:
+    needs: build
+    runs-on: ubuntu-latest
+
+    env:
+      WINEDEBUG: -all
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - name: Setup mise
+        uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac
+
+      - name: Install Wine and xvfb
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y wine64 xvfb
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Smoke test Windows artifact with Wine
+        shell: bash
+        run: |
+          set -euo pipefail
+          export WINEDEBUG=-all
+          export WINEPREFIX="$HOME/.wine"
+          # wine (not wine64) is the standard wrapper on Ubuntu
+          xvfb-run bun scripts/smoke-artifact.ts --target=windows-x64 --artifact-dir=dist --runner=wine
+
+  docker-integration:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - name: Setup mise
+        uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac
+
+      - name: Setup QEMU
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130
+
+      - name: Build musl binaries
+        run: mise run build -- --targets=linux-x64-musl,linux-arm64-musl
+
+      - name: Smoke test amd64 Docker image
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker buildx create --name skillet-smoke-builder --use || docker buildx use skillet-smoke-builder
+          docker buildx build --platform linux/amd64 --load -t skillet:amd64 .
+          docker run --rm --platform linux/amd64 skillet:amd64 --help
+
+      - name: Smoke test arm64 Docker image
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker buildx use skillet-smoke-builder
+          # --load is not supported for cross-platform builds on the default builder;
+          # verify the image builds successfully and test via direct QEMU execution instead.
+          docker buildx build --platform linux/arm64 -t skillet:arm64 .
+          docker run --rm --platform linux/arm64 -v "$PWD/dist:/artifacts:ro" alpine:3.22 sh -c 'apk add --no-cache libstdc++ libgcc >/dev/null && /artifacts/skillet-linux-arm64-musl --help'
+
+  packaging-validate:
+    needs: checksums
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - name: Setup mise
+        uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac
+
+      - name: Download checksum artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: skillet-checksums
+          path: dist
+
+      - name: Validate rendered packaging assets
+        run: mise run package-validate
+
+      - name: Validate Homebrew formula syntax
+        run: ruby -c packaging/homebrew/skillet.rb
+
+  windows-packaging-validate:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - name: Pack Chocolatey package
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist/choco | Out-Null
+          choco pack packaging/chocolatey/skillet.nuspec --outputdirectory dist/choco
+
+      - name: Validate Chocolatey PowerShell scripts
+        shell: pwsh
+        run: |
+          [scriptblock]::Create((Get-Content -Raw packaging/chocolatey/tools/chocolateyinstall.ps1)) | Out-Null
+          [scriptblock]::Create((Get-Content -Raw packaging/chocolatey/tools/chocolateyuninstall.ps1)) | Out-Null
+
+      - name: Validate winget manifests exist and are non-empty
+        shell: pwsh
+        run: |
+          $package = Get-Content package.json -Raw | ConvertFrom-Json
+          $wingetDir = Join-Path packaging/winget $package.version
+          $required = @(
+            'echohello-dev.skillet.yaml',
+            'echohello-dev.skillet.installer.yaml',
+            'echohello-dev.skillet.locale.en-US.yaml'
+          )
+          foreach ($file in $required) {
+            $path = Join-Path $wingetDir $file
+            if (-not (Test-Path $path)) { throw "Missing winget manifest: $path" }
+            if ((Get-Item $path).Length -eq 0) { throw "Empty winget manifest: $path" }
+            # Sanity-check YAML key presence
+            $content = Get-Content $path -Raw
+            if (-not ($content -match 'PackageIdentifier:\s*echohello-dev\.skillet')) {
+              throw "Missing PackageIdentifier in $path"
+            }
+          }
