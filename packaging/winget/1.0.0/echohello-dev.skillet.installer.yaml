@@ -1,0 +1,11 @@
+PackageIdentifier: echohello-dev.skillet
+PackageVersion: 1.0.0
+Installers:
+  - Architecture: x64
+    InstallerType: portable
+    InstallerUrl: https://github.com/echohello-dev/skillet/releases/download/v1.0.0/skillet-windows-x64.exe
+    InstallerSha256: 8BBEA1575BAA229A7B93A8EF6477A5BCA65885B7763D4E86A8AC25E39C270931
+Commands:
+  - skillet
+ManifestType: installer
+ManifestVersion: 1.6.0
