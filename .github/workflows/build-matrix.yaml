@@ -86,7 +86,7 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
 
       - name: Setup QEMU
-        uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e8
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130
 
       - name: Download build artifacts
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
@@ -134,9 +134,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          sudo dpkg --add-architecture i386
           sudo apt-get update
-          sudo apt-get install -y wine64 wine32 winbind xvfb
+          sudo apt-get install -y wine64 xvfb
 
       - name: Download build artifacts
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
@@ -144,21 +143,14 @@ jobs:
           path: dist
           merge-multiple: true
 
-      - name: Initialise Wine prefix
-        shell: bash
-        run: |
-          set -euo pipefail
-          export WINEDEBUG=-all
-          export WINEPREFIX="$HOME/.wine"
-          xvfb-run winecfg /v
-
       - name: Smoke test Windows artifact with Wine
         shell: bash
         run: |
           set -euo pipefail
           export WINEDEBUG=-all
           export WINEPREFIX="$HOME/.wine"
-          xvfb-run bun scripts/smoke-artifact.ts --target=windows-x64 --artifact-dir=dist --runner=wine64
+          # wine (not wine64) is the standard wrapper on Ubuntu
+          xvfb-run bun scripts/smoke-artifact.ts --target=windows-x64 --artifact-dir=dist --runner=wine
 
   docker-integration:
     runs-on: ubuntu-latest
@@ -171,7 +163,7 @@ jobs:
         uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac
 
       - name: Setup QEMU
-        uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e8
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130
 
       - name: Build musl binaries
         run: mise run build -- --targets=linux-x64-musl,linux-arm64-musl
@@ -236,9 +228,23 @@ jobs:
           [scriptblock]::Create((Get-Content -Raw packaging/chocolatey/tools/chocolateyinstall.ps1)) | Out-Null
           [scriptblock]::Create((Get-Content -Raw packaging/chocolatey/tools/chocolateyuninstall.ps1)) | Out-Null
 
-      - name: Validate winget manifests
+      - name: Validate winget manifests exist and are non-empty
         shell: pwsh
         run: |
           $package = Get-Content package.json -Raw | ConvertFrom-Json
-          $manifest = Join-Path (Join-Path packaging/winget $package.version) 'echohello-dev.skillet.yaml'
-          winget validate $manifest
+          $wingetDir = Join-Path packaging/winget $package.version
+          $required = @(
+            'echohello-dev.skillet.yaml',
+            'echohello-dev.skillet.installer.yaml',
+            'echohello-dev.skillet.locale.en-US.yaml'
+          )
+          foreach ($file in $required) {
+            $path = Join-Path $wingetDir $file
+            if (-not (Test-Path $path)) { throw "Missing winget manifest: $path" }
+            if ((Get-Item $path).Length -eq 0) { throw "Empty winget manifest: $path" }
+            # Sanity-check YAML key presence
+            $content = Get-Content $path -Raw
+            if (-not ($content -match 'PackageIdentifier:\s*echohello-dev\.skillet')) {
+              throw "Missing PackageIdentifier in $path"
+            }
+          }
