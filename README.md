@@ -2,161 +2,109 @@
 
 Portable CLI for managing agent skills.
 
-Skillet installs, discovers, and updates `SKILL.md`-based skills across supported agent directories.
+Skillet installs, discovers, and updates `SKILL.md`-based skills across Claude Code, Codex, OpenCode, Cursor, and Windsurf.
 
-## Installation
+## Why Skillet
 
-| Method | Command / Source | Status |
-| --- | --- | --- |
-| Binary release | Download from GitHub Releases | Planned |
-| Homebrew | `brew install skillet` | Configured |
-| Chocolatey | `choco install skillet` | Configured |
-| winget | `winget install skillet` | Configured |
-| npm / npx | `npx sklt ...` | Configured |
-| Docker | `docker run ... skillet ...` | Configured |
-| Local dev | `mise run dev -- --help` | Available |
+- **Manifest-driven** — declare your skills in `apm.yml` and `sklt install` reproduces the tree on any machine.
+- **OpenAPM-compatible** — `apm.yml` conforms to the [OpenAPM v0.1](https://microsoft.github.io/apm/reference/manifest-schema/) spec, with a focused skills-only profile.
+- **OCI-native** — publish and consume skills as signed `oci://` artifacts. Air-gapped, provenance-friendly, enterprise-ready.
+- **Single static binary** — no Python runtime, no Node dependency for native installs. Drops into CI runners, Docker images, and locked-down endpoints.
+- **Symlink-first** — edit a skill in your repo, see it live in the agent immediately. No reinstall dance.
 
-Current development workflow:
+## Install
 
 ```bash
-mise run install
-mise run dev -- --help
+# npm / npx (any platform with Node 20+)
+npm i -g sklt
+npx sklt --help
+
+# macOS / Linux (Homebrew)
+brew install echohello-dev/tap/sklt
+
+# Windows (winget)
+winget install echohello-dev.sklt
+
+# Container
+docker run --rm ghcr.io/echohello-dev/skillet --help
+
+# Static binary — download from GitHub Releases
+# https://github.com/echohello-dev/skillet/releases
 ```
 
-## CLI Usage
+All install methods ship the same `sklt` binary. See [docs/getting-started.md](./docs/getting-started.md) for the full install matrix and per-platform notes.
+
+## Quick start
 
 ```bash
-sklt --help
-sklt find [query]
-sklt init [directory]
-sklt add <source>
-sklt install
-```
+# Scaffold an apm.yml in your project
+mkdir my-agent-skills && cd my-agent-skills
+sklt init
 
-Implemented commands:
-- `find`: search discovered local skills by name/description
-- `init`: scaffold a valid `SKILL.md`
-- `add`: install skills from a source (git, OCI, HTTP archive, local)
-- `install`: install all dependencies declared in `apm.yml`
-- `generate-lock`: deterministic `skillet.lock.yaml` generation from installed skills
+# Add a skill from any supported source
+sklt add anthropics/skills
 
-In-progress commands:
-- `check`
-- `update`
-
-## Source Formats
-
-Skillet supports these source formats for skill content:
-
-- Git sources (owner/repo shorthand, HTTPS, `git@`, local repos)
-- HTTP archives (`.zip`, `.tar.gz`) with traversal and size safety checks
-- OCI artifacts (`oci://registry/repository:tag` or `@sha256:digest`)
-
-## Compatibility Notes
-
-Supported agent directory conventions:
-
-- Project scope:
-  - `.claude/skills`
-  - `.codex/skills`
-  - `.opencode/skills`
-  - `.cursor/skills`
-  - `.windsurf/skills`
-- Global scope:
-  - `~/.claude/skills`
-  - `~/.codex/skills`
-  - `~/.opencode/skills`
-  - `~/.cursor/skills`
-  - `~/.windsurf/skills`
-
-Discovery behavior:
-
-- Standard search locations include root + `skills/` variants
-- Invalid `SKILL.md` files are skipped
-- Recursive fallback search is only used when standard/agent locations are empty
-
-## Lockfile
-
-Skillet lockfile format is YAML (`skillet.lock.yaml`) with deterministic ordering.
-
-Schema (v1):
-
-```yaml
-version: 1
-sources:
-  - type: git|oci|http|unknown
-    url: <source-url>
-    ref: <optional-ref>
-    digest: <optional-digest>
-    installMethod: symlink|copy
-    skills:
-      - <skill-name>
-    agents:
-      - <agent-id>
-```
-
-## APM Manifest
-
-Skillet reads and writes `apm.yml` as its primary manifest format, conforming to the [OpenAPM v0.1 specification](https://microsoft.github.io/apm/reference/manifest-schema/) with a scoped profile for skills only.
-
-Supported fields:
-- `name`, `version`, `description`
-- `target` / `targets`: which agent harnesses to deploy to
-- `dependencies.apm`: git, local, and HTTP sources
-
-Unsupported fields (ignored with notice):
-- `dependencies.mcp`, `dependencies.lsp`
-- `scripts`, `includes`, `registries`, `policy`, `compilation`, `marketplace`
-
-Example `apm.yml`:
-
-```yaml
-name: my-project
-version: 1.0.0
-dependencies:
+# Or declare everything up front and install in one shot
+echo 'dependencies:
   apm:
-    - microsoft/apm-sample-package#v1.0.0
-    - git: https://gitlab.com/acme/coding-standards.git
-      path: instructions/security
-      ref: v2.0
-    - ./local-skills
-```
-
-Install everything declared:
-
-```bash
+    - anthropics/skills/skills/frontend-design
+    - oci://ghcr.io/your-org/team-skills:v1' >> apm.yml
 sklt install
+
+# Verify what's on disk
+sklt find
 ```
 
-## OCI Artifact Spec
+See [docs/usage.md](./docs/usage.md) for the full command reference, manifest schema, and source format guide.
 
-Skillet OCI resolver expects artifacts with:
+## Commands
 
-- OCI reference format:
-  - `oci://<registry>/<repo>:<tag>`
-  - `oci://<registry>/<repo>@sha256:<digest>`
-- Manifest requirements:
-  - `artifactType: application/vnd.skillet.skill.v1+tar`
-  - at least one tar layer
-- Content requirements:
-  - tar layer extracts safely (no path traversal)
-  - artifact contains exactly one skill directory
-  - skill contains `SKILL.md`
+| Command | Description |
+| --- | --- |
+| `sklt find [query]` | Search discovered local skills |
+| `sklt init [dir]` | Scaffold a `SKILL.md` |
+| `sklt add <source>` | Install skills from a source |
+| `sklt install` | Install every dependency in `apm.yml` |
+| `sklt check` | *(in progress)* Detect upstream changes |
+| `sklt update` | *(in progress)* Refresh refs and reinstall |
+| `sklt generate-lock` | Regenerate `skillet.lock.yaml` from disk |
 
-For tag-based references, Skillet records the resolved manifest digest for lock tracking.
+Run `sklt --help` for the full list.
 
-## OCI Publishing Guidance
+## Source formats
 
-Recommended publishing flow:
+Skillet resolves any of these as a `sklt add` or `apm.yml` source:
 
-1. Package one skill directory per artifact into a tar layer.
-2. Publish with artifact type `application/vnd.skillet.skill.v1+tar`.
-3. Push to registry (GHCR recommended first) with both tag and digest discoverability.
-4. Install via:
-   - `oci://ghcr.io/<org>/<skill>:<tag>`
-   - `oci://ghcr.io/<org>/<skill>@sha256:<digest>`
+- **Git** — `owner/repo`, `owner/repo#v1.0.0`, full `https://` or `git@` URLs
+- **OCI** — `oci://registry/repository:tag` or `oci://registry/repository@sha256:<digest>`
+- **HTTP archive** — `.zip`, `.tar.gz`, `.tgz` (with traversal and size safety checks)
+- **Local** — `./path`, `../path`, `/abs/path`
 
-Example (conceptual):
+See [docs/usage.md#source-formats](./docs/usage.md#source-formats) for details.
+
+## Supported agents
+
+| Agent | Project scope | Global scope |
+| --- | --- | --- |
+| Claude Code | `.claude/skills` | `~/.claude/skills` |
+| Codex | `.codex/skills` | `~/.codex/skills` |
+| OpenCode | `.opencode/skills` | `~/.opencode/skills` |
+| Cursor | `.cursor/skills` | `~/.cursor/skills` |
+| Windsurf | `.windsurf/skills` | `~/.windsurf/skills` |
+
+APM `target:` and `targets:` values map to these names. Unknown targets (e.g. `gemini`, `kiro`, `copilot`) are silently ignored — Skillet is skills-only.
+
+## OCI artifact spec
+
+`oci://` artifacts must use:
+
+- **Artifact type:** `application/vnd.skillet.skill.v1+tar`
+- **At least one tar layer** containing a single skill directory with `SKILL.md`
+- **Safe extraction** — no path traversal
+
+Tag-based refs are resolved to a manifest digest and recorded in `skillet.lock.yaml` for reproducibility.
+
+Publishing example (conceptual):
 
 ```bash
 tar -cf skill.tar <skill-dir>
@@ -168,17 +116,25 @@ oras push ghcr.io/<org>/<skill>:v1 \
 ## Development
 
 ```bash
-mise run install
-mise run test
-mise run ci
+mise run install     # install dependencies
+mise run test        # run vitest
+mise run ci          # test + npm publish dry-run
+mise run dev -- --help
 ```
 
-AGENTS instructions live in `AGENTS.md`.
+Project conventions live in `AGENTS.md`. Architecture decisions are in `docs/adr/`.
 
-Distribution docs:
+## Documentation
 
-- Homebrew: `docs/distribution/homebrew.md`
-- Chocolatey: `docs/distribution/chocolatey.md`
-- winget: `docs/distribution/winget.md`
-- Docker: `docs/distribution/docker.md`
-- npm: `docs/distribution/npm.md`
+- [Getting Started](./docs/getting-started.md) — install and first project
+- [Usage](./docs/usage.md) — command reference, manifest schema, source formats
+- [Parity: Vercel CLI](./docs/parity/2026-02-20-vercel-cli-parity.md)
+- [ADR-0001: APM Manifest Compliance](./docs/adr/0001-apm-manifest-compliance.md)
+
+Distribution channels:
+
+- [Homebrew](./docs/distribution/homebrew.md)
+- [Chocolatey](./docs/distribution/chocolatey.md)
+- [winget](./docs/distribution/winget.md)
+- [Docker](./docs/distribution/docker.md)
+- [npm](./docs/distribution/npm.md)
