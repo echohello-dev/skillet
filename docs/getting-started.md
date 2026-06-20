@@ -4,7 +4,7 @@ This guide takes you from zero to your first `sklt install` in about five minute
 
 ## 1. Install `sklt`
 
-Pick the install method that matches your platform. The package name is `sklt`.
+Pick the install method that matches your platform. The binary is `sklt` everywhere; the npm package name is `getskillet`.
 
 ### macOS / Linux (recommended)
 
@@ -17,7 +17,7 @@ Or pick a specific channel:
 | Channel | Command | Notes |
 | --- | --- | --- |
 | **Homebrew** | `brew install echohello-dev/tap/sklt` | macOS, Linuxbrew |
-| **npm** | `npm i -g sklt` or use `npx sklt` | Node 20+ |
+| **npm** | `npm i -g getskillet` or use `npx getskillet` | Node 20+ |
 | **Direct binary** | Download from [GitHub Releases](https://github.com/echohello-dev/skillet/releases) | Single static binary, no runtime |
 
 ### Windows
@@ -30,7 +30,7 @@ irm https://echohello.dev/sklt/install.ps1 | iex
 | --- | --- | --- |
 | **winget** | `winget install echohello-dev.sklt` | Windows 10+ |
 | **Chocolatey** | `choco install sklt` | |
-| **npm** | `npm i -g sklt` | Node 20+ |
+| **npm** | `npm i -g getskillet` | Node 20+ |
 
 ### Container
 
