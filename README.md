@@ -26,18 +26,21 @@ mise run dev -- --help
 ## CLI Usage
 
 ```bash
-skillet --help
-skillet find [query]
-skillet init [directory]
+sklt --help
+sklt find [query]
+sklt init [directory]
+sklt add <source>
+sklt install
 ```
 
 Implemented commands:
 - `find`: search discovered local skills by name/description
 - `init`: scaffold a valid `SKILL.md`
+- `add`: install skills from a source (git, OCI, HTTP archive, local)
+- `install`: install all dependencies declared in `apm.yml`
 - `generate-lock`: deterministic `skillet.lock.yaml` generation from installed skills
 
 In-progress commands:
-- `add`
 - `check`
 - `update`
 
@@ -90,6 +93,39 @@ sources:
       - <skill-name>
     agents:
       - <agent-id>
+```
+
+## APM Manifest
+
+Skillet reads and writes `apm.yml` as its primary manifest format, conforming to the [OpenAPM v0.1 specification](https://microsoft.github.io/apm/reference/manifest-schema/) with a scoped profile for skills only.
+
+Supported fields:
+- `name`, `version`, `description`
+- `target` / `targets`: which agent harnesses to deploy to
+- `dependencies.apm`: git, local, and HTTP sources
+
+Unsupported fields (ignored with notice):
+- `dependencies.mcp`, `dependencies.lsp`
+- `scripts`, `includes`, `registries`, `policy`, `compilation`, `marketplace`
+
+Example `apm.yml`:
+
+```yaml
+name: my-project
+version: 1.0.0
+dependencies:
+  apm:
+    - microsoft/apm-sample-package#v1.0.0
+    - git: https://gitlab.com/acme/coding-standards.git
+      path: instructions/security
+      ref: v2.0
+    - ./local-skills
+```
+
+Install everything declared:
+
+```bash
+sklt install
 ```
 
 ## OCI Artifact Spec

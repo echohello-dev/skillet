@@ -8,6 +8,7 @@ import { resolveGitSource } from "../resolvers/git";
 import { resolveHttpArchive } from "../resolvers/http-archive";
 import { resolveOciSource } from "../resolvers/oci";
 import { parseSkillMarkdown } from "../skills/skill";
+import { readApmManifest, writeApmManifest, addDependencyToManifest } from "../manifest/apm";
 
 type WriteLine = (line: string) => void;
 
@@ -149,6 +150,18 @@ export async function runAddCommand(args: string[], options: RunAddCommandOption
     stdout(`Updated lockfile: ${lock.outputPath}`);
   }
 
+  // Update apm.yml if present and source is new
+  const manifest = readApmManifest(cwd);
+  if (manifest && !parsed.global) {
+    const added = addDependencyToManifest(manifest, parsed.source);
+    if (added) {
+      writeApmManifest(cwd, manifest);
+      if (options.verbose) {
+        stdout(`Updated apm.yml with ${parsed.source}`);
+      }
+    }
+  }
+
   return 0;
 }
 
@@ -269,7 +282,7 @@ type ResolvedSource = {
   contentPath: string;
 };
 
-async function resolveSource(
+export async function resolveSource(
   source: string,
   options: { tempRoot: string; insecureHttp?: boolean }
 ): Promise<ResolvedSource> {
@@ -319,13 +332,13 @@ async function resolveSource(
   };
 }
 
-type SourceSkill = {
+export type SourceSkill = {
   name: string;
   description: string;
   path: string;
 };
 
-function discoverSourceSkills(contentPath: string): SourceSkill[] {
+export function discoverSourceSkills(contentPath: string): SourceSkill[] {
   const candidates = new Set<string>();
   const standardRoots = [
     contentPath,
