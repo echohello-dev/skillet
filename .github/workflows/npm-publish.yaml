@@ -77,3 +77,33 @@ jobs:
       - name: Publish package
         if: steps.package.outputs.published != 'true' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run)
         run: npm publish --access public --tag "${{ github.event_name == 'workflow_dispatch' && inputs.npm_tag || 'latest' }}"
+
+      - name: Publish scoped alias
+        if: steps.package.outputs.published != 'true' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run)
+        env:
+          ALIAS_SCOPE: "@echohello"
+        run: |
+          set -euo pipefail
+          VERSION=$(node --print "require('./package.json').version")
+          ALIAS_NAME="${ALIAS_SCOPE}/skillet"
+
+          # Skip if the alias version is already published
+          if npm view "${ALIAS_NAME}@${VERSION}" version --registry=https://registry.npmjs.org >/dev/null 2>&1; then
+            echo "${ALIAS_NAME}@${VERSION} is already published; skipping."
+            exit 0
+          fi
+
+          # Build a separate package.json in a clean dir for the scoped publish
+          ALIAS_DIR="dist/npm-alias"
+          rm -rf "$ALIAS_DIR"
+          mkdir -p "$ALIAS_DIR"
+          cp dist/npm/cli.js "$ALIAS_DIR/"
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            pkg.name = '${ALIAS_NAME}';
+            fs.writeFileSync('${ALIAS_DIR}/package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+
+          cd "$ALIAS_DIR"
+          npm publish --access public --tag "${{ github.event_name == 'workflow_dispatch' && inputs.npm_tag || 'latest' }}"
