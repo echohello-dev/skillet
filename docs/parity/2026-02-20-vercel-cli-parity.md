@@ -28,8 +28,38 @@ Parity review covers:
 3. Complete flag-level parity during `add/check/update` implementation issues (`#10`, `#12`).
 4. Revisit optional parity for `remove/list` after core install/update workflow is complete.
 
+## APM Manifest Parity (added 2026-06-20)
+
+Compared against: [OpenAPM v0.1 manifest schema](https://microsoft.github.io/apm/reference/manifest-schema/)
+
+| Area | APM | `skillet` | Status | Notes |
+| --- | --- | --- | --- | --- |
+| Manifest format | `apm.yml` | `apm.yml` (read/write) | **Accepted** | ADR-0001: adopt APM manifest with scoped profile. |
+| `dependencies.apm` | String + object forms, git/local/HTTP/registry/marketplace | String + object forms, git/local/HTTP only | Partial | Registry and marketplace deps are not supported. |
+| `dependencies.mcp` | Full MCP server management | Not supported | Intentional gap | Out of scope for skills-only resolver. |
+| `dependencies.lsp` | LSP server entries | Not supported | Intentional gap | Out of scope. |
+| `target` / `targets` | String or list, auto-detect | String or list, auto-detect | Partial | Only maps to Skillet's known agents; unsupported targets silently ignored. |
+| `scripts` | Named shell commands | Not supported | Intentional gap | Out of scope. |
+| `includes` | Auto or explicit path list | Not supported | Intentional gap | Out of scope. |
+| `registries` | REST-based APM registries | Not supported | Gap | Could be added later; not on immediate roadmap. |
+| `policy` | Consumer-side org policy | Not supported | Intentional gap | Out of scope. |
+| `compilation` | `apm compile` settings | Not supported | Intentional gap | Out of scope. |
+| `marketplace` | Marketplace authoring block | Not supported | Intentional gap | Out of scope. |
+| `sklt install` | `apm install` equivalent | Implemented | Partial | No `--frozen`, `--update`, or transitive resolution yet. |
+| Lockfile | `apm.lock.yaml` | `skillet.lock.yaml` | Partial | Field names aligned where practical; may adopt `apm.lock.yaml` in future ADR. |
+
+## Decisions
+
+1. Keep lightweight output style (no branded/colorized output) as an intentional divergence.
+2. Maintain core command name parity (`add/find/check/update/init`).
+3. Complete flag-level parity during `add/check/update` implementation issues (`#10`, `#12`).
+4. Revisit optional parity for `remove/list` after core install/update workflow is complete.
+5. **(NEW)** Adopt `apm.yml` as primary manifest per ADR-0001; scope to skills-only subset.
+
 ## Follow-up items
 
 - `#10` Add command implementation and flag parity.
 - `#12` Check/update command parity and behavior.
 - Future: decide whether `remove/list` parity is required for v1.
+- Future ADR: evaluate adopting `apm.lock.yaml` directly.
+- Issue: add virtual-package shorthand (`owner/repo/path`) to git resolver.
