@@ -34,9 +34,20 @@ npm publish --access public
 - Manual publish is available through `workflow_dispatch`; provide an explicit git ref, usually a release tag like `v1.0.0`.
 - Manual publish also supports a dry run so you can inspect the package contents without uploading to npm.
 - `mise run ci` now includes the npm publish dry run so package publishing is validated in CI before release.
-- The workflow uses the GitHub Actions environment `npm-publish`.
-- Add `NPM_TOKEN` as an environment secret in `npm-publish` using the value from your local `.env`.
-- GitHub Actions cannot read your local `.env` file directly.
+- **Uses npm Trusted Publishers** — no long-lived `NPM_TOKEN` secret required. The workflow uses GitHub OIDC (`id-token: write`) and `actions/setup-node`'s built-in OIDC support; npm verifies the workflow identity against the trusted publisher configured on the package.
+
+### First-time setup (one-time, on npmjs.com)
+
+1. **Create the package on npm** — either by publishing manually once (`npm publish --access public` from your local machine, or use the npm web UI to claim the name), or by triggering the workflow below in dry-run mode and then asking the maintainer to do a one-shot token publish.
+2. **Configure the Trusted Publisher** on https://www.npmjs.com/package/getskillet/access:
+   - **Publisher:** GitHub Actions
+   - **Organization or user:** `echohello-dev`
+   - **Repository:** `skillet`
+   - **Workflow filename:** `npm-publish.yaml`
+   - **Environment name:** *(leave blank)*
+3. **Confirm the workflow file** at `.github/workflows/npm-publish.yaml` has `id-token: write` in its `permissions:` block (already set).
+
+After this, all future `npm-publish` runs authenticate via OIDC — no token to rotate, leak, or steal.
 
 Manual dispatch inputs:
 
