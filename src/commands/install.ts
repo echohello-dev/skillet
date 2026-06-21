@@ -32,7 +32,7 @@ export async function runInstallCommand(_args: string[], options: RunInstallComm
 
   const manifest = readApmManifest(cwd);
   if (!manifest) {
-    stderr("No apm.yml found. Run `sklt init` to scaffold a project or create apm.yml manually.");
+    stderr("No apm.yml found. Run `skillet init` to scaffold a project or create apm.yml manually.");
     return 1;
   }
 

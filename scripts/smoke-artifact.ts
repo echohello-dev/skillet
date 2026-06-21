@@ -33,7 +33,7 @@ function main(): void {
     stdio: ["ignore", "pipe", "pipe"],
   });
 
-  if (!output.includes("sklt/")) {
+  if (!output.includes("skillet/")) {
     throw new Error(`Unexpected smoke output: ${output}`);
   }
 

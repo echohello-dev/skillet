@@ -106,7 +106,7 @@ jobs:
           set -euo pipefail
           OUTPUT=$(docker run --rm --platform linux/arm64/v8 -v "$PWD/dist:/artifacts:ro" alpine:3.22 sh -c 'apk add --no-cache libstdc++ libgcc >/dev/null && /artifacts/skillet-linux-arm64-musl --version')
           printf '%s\n' "$OUTPUT"
-          grep -F "sklt/" <<< "$OUTPUT"
+          grep -F "skillet/" <<< "$OUTPUT"
 
       - name: Smoke test arm64 gnu artifact under emulation
         shell: bash
@@ -114,7 +114,7 @@ jobs:
           set -euo pipefail
           OUTPUT=$(docker run --rm --platform linux/arm64/v8 -v "$PWD/dist:/artifacts:ro" ubuntu:24.04 /artifacts/skillet-linux-arm64-gnu --version)
           printf '%s\n' "$OUTPUT"
-          grep -F "sklt/" <<< "$OUTPUT"
+          grep -F "skillet/" <<< "$OUTPUT"
 
   wine-smoke:
     needs: build
