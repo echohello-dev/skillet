@@ -67,6 +67,19 @@ Manual dispatch inputs:
 - `npm_tag`: npm dist-tag, defaults to `latest`
 - `dry_run`: when true, runs `npm publish --dry-run` and skips the real publish step
 - When `dry_run` is true, the workflow uses the provided `npm_tag`, or falls back to `dry-run` if you leave it at `latest`.
+- `auth_method`: `oidc` (default, uses GitHub OIDC trusted publisher) or `manual_otp` (uses a legacy `NPM_TOKEN` secret plus a one-time password from the dispatch input). Use `manual_otp` when the OIDC integration is failing or for a one-off bootstrap publish.
+- `npm_otp`: required when `auth_method=manual_otp`. Provide the current 2FA OTP code from your authenticator. The value is masked in workflow logs but still surfaces in the dispatch payload; rotate the OTP after each dispatch.
+
+### Manual OTP bootstrap publish
+
+When the OIDC trusted publisher is misbehaving (for example, returning `404 'getskillet is not in this registry'` during automated release publishes), fall back to manual OTP:
+
+1. Add `NPM_TOKEN` as an environment secret on the GitHub `production` environment (Settings → Environments → production → Add secret). Use a legacy automation token from `npmjs.com → Access Tokens → Automation` with 2FA-required publish scope.
+2. Trigger `npm-publish.yaml` via `workflow_dispatch` with `auth_method=manual_otp` and `npm_otp=<6-digit code>`.
+3. The workflow writes `NODE_AUTH_TOKEN` from the secret to `$GITHUB_ENV`, which overrides the `actions/setup-node` OIDC value for the publish steps. Both `getskillet` and `@echohello/skillet` are published with `--otp` against the same code.
+4. Rotate the OTP after the run completes and consider rotating the `NPM_TOKEN` secret if it was exposed in any logs.
+
+This path is intentionally heavier than OIDC (manual step + secret rotation). It exists to unblock a release when the trusted publisher configuration is broken; it should not be the default.
 
 Local command:
 

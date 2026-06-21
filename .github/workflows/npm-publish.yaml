@@ -20,6 +20,18 @@ on:
         required: false
         default: false
         type: boolean
+      auth_method:
+        description: Authentication method (oidc uses GitHub OIDC trusted publisher; manual_otp uses NPM_TOKEN secret + 2FA OTP)
+        required: false
+        default: oidc
+        type: choice
+        options:
+          - oidc
+          - manual_otp
+      npm_otp:
+        description: 2FA OTP code (required when auth_method=manual_otp). Code is masked in workflow logs.
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -68,6 +80,26 @@ jobs:
             echo "published=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Configure manual OTP auth
+        if: github.event_name == 'workflow_dispatch' && inputs.auth_method == 'manual_otp'
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_OTP: ${{ inputs.npm_otp }}
+        run: |
+          set -euo pipefail
+          if [ -z "${NPM_TOKEN}" ]; then
+            echo "::error::auth_method=manual_otp requires NPM_TOKEN to be configured as a secret on the production environment."
+            exit 1
+          fi
+          if [ -z "${NPM_OTP}" ]; then
+            echo "::error::auth_method=manual_otp requires npm_otp input to be supplied with the current 2FA OTP code."
+            exit 1
+          fi
+          # Override actions/setup-node OIDC NODE_AUTH_TOKEN with the legacy token.
+          echo "NODE_AUTH_TOKEN=${NPM_TOKEN}" >> "$GITHUB_ENV"
+          echo "NPM_OTP_CONFIGURED=true" >> "$GITHUB_ENV"
+          echo "Using manual_otp auth: NPM_TOKEN secret + 2FA OTP."
+
       - name: Dry run publish
         if: github.event_name == 'workflow_dispatch' && inputs.dry_run
         env:
@@ -76,16 +108,27 @@ jobs:
 
       - name: Publish package
         if: steps.package.outputs.published != 'true' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run)
-        run: npm publish --access public --tag "${{ github.event_name == 'workflow_dispatch' && inputs.npm_tag || 'latest' }}"
+        env:
+          NPM_OTP: ${{ env.NPM_OTP_CONFIGURED == 'true' && inputs.npm_otp || '' }}
+        run: |
+          set -euo pipefail
+          TAG="${{ github.event_name == 'workflow_dispatch' && inputs.npm_tag || 'latest' }}"
+          if [ -n "${NPM_OTP}" ]; then
+            npm publish --access public --tag "${TAG}" --otp="${NPM_OTP}"
+          else
+            npm publish --access public --tag "${TAG}"
+          fi
 
       - name: Publish scoped alias
         if: steps.package.outputs.published != 'true' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run)
         env:
           ALIAS_SCOPE: "@echohello"
+          NPM_OTP: ${{ env.NPM_OTP_CONFIGURED == 'true' && inputs.npm_otp || '' }}
         run: |
           set -euo pipefail
           VERSION=$(node --print "require('./package.json').version")
           ALIAS_NAME="${ALIAS_SCOPE}/skillet"
+          TAG="${{ github.event_name == 'workflow_dispatch' && inputs.npm_tag || 'latest' }}"
 
           # Skip if the alias version is already published
           if npm view "${ALIAS_NAME}@${VERSION}" version --registry=https://registry.npmjs.org >/dev/null 2>&1; then
@@ -106,4 +149,8 @@ jobs:
           "
 
           cd "$ALIAS_DIR"
-          npm publish --access public --tag "${{ github.event_name == 'workflow_dispatch' && inputs.npm_tag || 'latest' }}"
+          if [ -n "${NPM_OTP}" ]; then
+            npm publish --access public --tag "${TAG}" --otp="${NPM_OTP}"
+          else
+            npm publish --access public --tag "${TAG}"
+          fi
