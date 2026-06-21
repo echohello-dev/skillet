@@ -15,7 +15,7 @@
 
 |         |                                                                                                                                                                                                                              |
 | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| CI/CD   | [![CI](https://github.com/echohello-dev/skillet/actions/workflows/ci.yml/badge.svg)](https://github.com/echohello-dev/skillet/actions) [![Release](https://github.com/echohello-dev/skillet/actions/workflows/release-please.yml/badge.svg)](https://github.com/echohello-dev/skillet/releases) |
+| CI/CD   | [![CI](https://github.com/echohello-dev/skillet/actions/workflows/ci.yaml/badge.svg)](https://github.com/echohello-dev/skillet/actions) [![Release](https://github.com/echohello-dev/skillet/actions/workflows/release-please.yaml/badge.svg)](https://github.com/echohello-dev/skillet/releases) |
 | Package | [![npm](https://img.shields.io/npm/v/getskillet?color=blue)](https://www.npmjs.com/package/getskillet) [![npm (scoped)](https://img.shields.io/npm/v/@echohello/skillet?color=blue)](https://www.npmjs.com/package/@echohello/skillet) [![Docker](https://img.shields.io/badge/ghcr.io-echohello--dev%2Fskillet-blue)](https://ghcr.io/echohello-dev/skillet) |
 | Meta    | [![License: MIT](https://img.shields.io/github/license/echohello-dev/skillet?color=blue)](LICENSE) [![Node 20+](https://img.shields.io/badge/node-20%2B-339933)](https://nodejs.org) [![Bun 1.2](https://img.shields.io/badge/bun-1.2-f9f1e1)](https://bun.sh) |
 
