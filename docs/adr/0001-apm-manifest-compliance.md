@@ -12,7 +12,7 @@ status: accepted
 
 Microsoft APM (Agent Package Manager) has published the OpenAPM v0.1 specification with a formal JSON Schema for `apm.yml`. The spec explicitly invites third-party conforming resolvers. APM is gaining traction as the de facto dependency manager for agent skills, prompts, and MCP servers across Claude, Copilot, Cursor, OpenCode, Codex, Gemini, and Windsurf.
 
-Skillet (`sklt`) was built as a lightweight, skills-only resolver with unique support for OCI artifacts and single-binary distribution. Until now it had no manifest format — installations were purely CLI-driven (`sklt add <source>`). This creates friction for teams who want reproducible, version-pinned skill trees checked into source control.
+Skillet was built as a lightweight, skills-only resolver with unique support for OCI artifacts and single-binary distribution. Until now it had no manifest format — installations were purely CLI-driven (`skillet add <source>`). This creates friction for teams who want reproducible, version-pinned skill trees checked into source control.
 
 We evaluated three paths:
 1. **Invent `skillet.yml`** — own format, own ecosystem, full control.
@@ -25,10 +25,10 @@ Adopt **Path 2: APM-conforming resolver with a scoped profile**.
 
 - Skillet reads and writes `apm.yml` as its primary manifest.
 - Skillet resolves `dependencies.apm` entries (git, local, HTTP sources) and deploys skills into per-agent directories.
-- Skillet **ignores** `mcp`, `lsp`, `hooks`, `commands`, `plugins`, `marketplace`, `compilation`, and `policy` blocks, surfacing a clear "not supported by sklt" notice when these are present. This aligns with the spec which permits resolvers to ignore unknown keys.
+- Skillet **ignores** `mcp`, `lsp`, `hooks`, `commands`, `plugins`, `marketplace`, `compilation`, and `policy` blocks, surfacing a clear "not supported by skillet" notice when these are present. This aligns with the spec which permits resolvers to ignore unknown keys.
 - Skillet **retains** `skillet.lock.yaml` as its lockfile format for now, with field names aligned to APM's lockfile spec where practical. A future ADR may adopt `apm.lock.yaml` directly.
-- Skillet **adds** `sklt install` as the bare-install command (no arguments = install everything declared in `apm.yml`).
-- `sklt add <source>` updates `apm.yml` when one exists, appending the source to `dependencies.apm`.
+- Skillet **adds** `skillet install` as the bare-install command (no arguments = install everything declared in `apm.yml`).
+- `skillet add <source>` updates `apm.yml` when one exists, appending the source to `dependencies.apm`.
 
 ### Rationale
 
@@ -42,7 +42,7 @@ Adopt **Path 2: APM-conforming resolver with a scoped profile**.
 ### Positive
 - Instant compatibility with APM-authored packages and marketplaces.
 - Teams can migrate between APM and Skillet without rewriting manifests.
-- `sklt install` provides reproducible, manifest-driven workflows.
+- `skillet install` provides reproducible, manifest-driven workflows.
 - Positions Skillet as "the lightweight, OCI-native APM resolver for skills-only workflows."
 
 ### Negative / trade-offs
@@ -53,8 +53,8 @@ Adopt **Path 2: APM-conforming resolver with a scoped profile**.
 ### Follow-ups
 - ADR-0002: Evaluate adopting `apm.lock.yaml` directly vs keeping `skillet.lock.yaml`.
 - Issue: Add virtual-package shorthand support to `src/resolvers/git.ts`.
-- Issue: Implement `--frozen` CI mode for `sklt install`.
-- Issue: Implement `--update` consent-gated ref refresh for `sklt install`.
+- Issue: Implement `--frozen` CI mode for `skillet install`.
+- Issue: Implement `--update` consent-gated ref refresh for `skillet install`.
 
 ## References
 - https://microsoft.github.io/apm/reference/manifest-schema/

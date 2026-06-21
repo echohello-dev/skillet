@@ -1,33 +1,35 @@
 # Usage
 
-Full reference for `sklt` commands, the `apm.yml` manifest, and supported source formats.
+Full reference for `skillet` commands, the `apm.yml` manifest, and supported source formats.
+
+**Binary naming:** every command below works with `skillet` (default) or `sklt` (shorthand alias). Both names point to the same binary.
 
 ## Commands
 
 ```bash
-sklt --help            # show all commands
-sklt --version         # print version + build metadata
+skillet --help            # show all commands
+skillet --version         # print version + build metadata
 ```
 
-### `sklt find [query]`
+### `skillet find [query]`
 
 Search skills already discovered on the current machine.
 
 ```bash
-sklt find                # list all discovered skills
-sklt find deploy         # filter by name or description keyword
+skillet find                # list all discovered skills
+skillet find deploy         # filter by name or description keyword
 ```
 
 Discovers skills from project directories (`.claude/skills`, `.codex/skills`, `.opencode/skills`, `.cursor/skills`, `.windsurf/skills`) and global equivalents in `$HOME`. Invalid `SKILL.md` files are skipped.
 
-### `sklt init [directory]`
+### `skillet init [directory]`
 
 Scaffold a new `SKILL.md` with the required frontmatter.
 
 ```bash
-sklt init                       # scaffold ./SKILL.md
-sklt init skills/team-voice     # scaffold skills/team-voice/SKILL.md
-sklt init skills/team-voice -y  # overwrite if it exists
+skillet init                       # scaffold ./SKILL.md
+skillet init skills/team-voice     # scaffold skills/team-voice/SKILL.md
+skillet init skills/team-voice -y  # overwrite if it exists
 ```
 
 The scaffolded file contains:
@@ -45,17 +47,17 @@ Describe what this skill does and when to use it.
 
 The directory name must be lowercase alphanumeric with optional hyphens (1–64 chars).
 
-### `sklt add <source>`
+### `skillet add <source>`
 
 Install skills from a single source.
 
 ```bash
-sklt add owner/repo                          # GitHub shorthand
-sklt add owner/repo#v1.2.0                   # pinned to a git ref
-sklt add https://github.com/owner/repo.git   # full git URL
-sklt add oci://ghcr.io/org/skill:v1          # OCI artifact
-sklt add https://example.com/skills.zip     # HTTP archive
-sklt add ./local-skills                      # local directory
+skillet add owner/repo                          # GitHub shorthand
+skillet add owner/repo#v1.2.0                   # pinned to a git ref
+skillet add https://github.com/owner/repo.git   # full git URL
+skillet add oci://ghcr.io/org/skill:v1          # OCI artifact
+skillet add https://example.com/skills.zip     # HTTP archive
+skillet add ./local-skills                      # local directory
 ```
 
 Flags:
@@ -74,26 +76,26 @@ Examples:
 
 ```bash
 # Preview what's available before installing
-sklt add owner/repo --list
+skillet add owner/repo --list
 
 # Install a single skill from a multi-skill repo
-sklt add owner/repo --skill frontend-design
+skillet add owner/repo --skill frontend-design
 
 # Install all skills to a specific agent
-sklt add owner/repo --all --agent codex
+skillet add owner/repo --all --agent codex
 
 # Copy instead of symlink (useful for system-managed agent dirs)
-sklt add owner/repo --all --copy
+skillet add owner/repo --all --copy
 ```
 
-If `apm.yml` exists in the current directory, `sklt add` appends the source to `dependencies.apm` (no duplicates).
+If `apm.yml` exists in the current directory, `skillet add` appends the source to `dependencies.apm` (no duplicates).
 
-### `sklt install`
+### `skillet install`
 
 Install every dependency declared in `apm.yml`. No arguments required.
 
 ```bash
-sklt install
+skillet install
 ```
 
 Resolves each `dependencies.apm` entry in declaration order and deploys the discovered skills to the target agent directory.
@@ -104,7 +106,7 @@ Target selection:
 - Use `--agent` to override:
 
 ```bash
-sklt install --agent claude,cursor
+skillet install --agent claude,cursor
 ```
 
 Other flags:
@@ -113,21 +115,21 @@ Other flags:
 | --- | --- |
 | `--dry-run` | Print the install plan without writing anything |
 
-### `sklt check` (in progress)
+### `skillet check` (in progress)
 
 Show which installed skills have newer refs available upstream.
 
-### `sklt update` (in progress)
+### `skillet update` (in progress)
 
 Refresh refs to the latest matching versions and reinstall.
 
-### `sklt generate-lock`
+### `skillet generate-lock`
 
 Re-generate `skillet.lock.yaml` from the skills currently on disk. Useful if the lockfile gets out of sync with reality (e.g., manual edits).
 
 ## Manifest format (`apm.yml`)
 
-`apm.yml` is the source of truth for `sklt install`. Skillet is a scoped conforming resolver for [OpenAPM v0.1](https://microsoft.github.io/apm/reference/manifest-schema/).
+`apm.yml` is the source of truth for `skillet install`. Skillet is a scoped conforming resolver for [OpenAPM v0.1](https://microsoft.github.io/apm/reference/manifest-schema/).
 
 ### Schema (supported subset)
 
@@ -191,10 +193,10 @@ Unknown top-level keys are ignored per the OpenAPM spec.
 ### Git
 
 ```bash
-sklt add owner/repo
-sklt add owner/repo#v2.0
-sklt add git@github.com:owner/repo.git
-sklt add https://gitlab.com/group/sub/repo.git
+skillet add owner/repo
+skillet add owner/repo#v2.0
+skillet add git@github.com:owner/repo.git
+skillet add https://gitlab.com/group/sub/repo.git
 ```
 
 Clones to a temporary directory, checks out the ref, then symlinks skills into the target agent dir. Records the commit SHA in the lockfile for reproducibility.
@@ -202,8 +204,8 @@ Clones to a temporary directory, checks out the ref, then symlinks skills into t
 ### OCI
 
 ```bash
-sklt add oci://ghcr.io/org/skill:v1
-sklt add oci://ghcr.io/org/skill@sha256:abc123...
+skillet add oci://ghcr.io/org/skill:v1
+skillet add oci://ghcr.io/org/skill@sha256:abc123...
 ```
 
 Published artifacts must use artifact type `application/vnd.skillet.skill.v1+tar` and contain a single tar layer. See the [OCI Artifact Spec](../README.md#oci-artifact-spec).
@@ -211,8 +213,8 @@ Published artifacts must use artifact type `application/vnd.skillet.skill.v1+tar
 ### HTTP archives
 
 ```bash
-sklt add https://example.com/skills.zip
-sklt add https://example.com/skills.tar.gz
+skillet add https://example.com/skills.zip
+skillet add https://example.com/skills.tar.gz
 ```
 
 Skillet validates that the archive is within size limits and contains no path traversal entries.
@@ -220,8 +222,8 @@ Skillet validates that the archive is within size limits and contains no path tr
 ### Local directories
 
 ```bash
-sklt add ./my-skills
-sklt add /abs/path/to/skills
+skillet add ./my-skills
+skillet add /abs/path/to/skills
 ```
 
 Searches the directory for `SKILL.md` files in standard locations (`./skills/`, subdirectories, or a recursive fallback).
@@ -263,7 +265,7 @@ Use `--global` / `-g` to install to the user-scope directory.
 **Dev loop:** use a local source and symlink installs.
 
 ```bash
-sklt add ./my-skill --skill my-skill -y
+skillet add ./my-skill --skill my-skill -y
 # Edit ./my-skill/SKILL.md; the symlinked copy in .claude/skills/ updates immediately
 ```
 

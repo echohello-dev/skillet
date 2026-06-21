@@ -5,12 +5,13 @@ Skillet publishes the same content under two npm names so users can install with
 - **`getskillet`** (primary, unscoped) — `npm i -g getskillet` or `npx getskillet ...`
 - **`@echohello/skillet`** (alias, scoped) — `npm i -g @echohello/skillet` or `npx @echohello/skillet ...`
 
-After install, the binary is the same in both cases: `sklt`.
+After install, the binary is the same in both cases: `skillet` (default) with `sklt` as a shorthand alias — both names are wired in `package.json` `bin` and point at `dist/npm/cli.js`.
 
 ## Packaging Model
 
 - `src/cli.ts` is bundled to `dist/npm/cli.js` targeting Node.
-- The primary `package.json` is `getskillet`; the `bin` field exposes `sklt` pointing to `dist/npm/cli.js`.
+- The primary `package.json` is `getskillet`; the `bin` field exposes both `skillet` and `sklt`, both pointing to `dist/npm/cli.js`.
+- The CLI runtime detects which name the user invoked (via `process.argv[1]`) and rewrites the displayed `bin` so `skillet --version` reports `skillet/1.x.y` while `sklt --version` reports `sklt/1.x.y`. The version number is always identical.
 - The CI workflow re-builds the same bundle under `dist/npm-alias/` with a rewritten `name: @echohello/skillet` and publishes it as the scoped alias. Same tarball content, different package identity.
 - `prepack` rebuilds the npm CLI bundle automatically.
 
@@ -19,9 +20,17 @@ After install, the binary is the same in both cases: `sklt`.
 ```bash
 mise run build-npm
 npm pack
+npx --yes --package ./getskillet-<version>.tgz skillet --help
 npx --yes --package ./getskillet-<version>.tgz sklt --help
+bunx --bun --package ./getskillet-<version>.tgz skillet --help
 bunx --bun --package ./getskillet-<version>.tgz sklt --help
 mise run npm-publish-dry-run
+```
+
+Or run the smoke check that exercises both bin entries end-to-end:
+
+```bash
+mise run npm-smoke
 ```
 
 ## Publish
@@ -46,8 +55,9 @@ npm publish --access public
    - **Organization or user:** `echohello-dev`
    - **Repository:** `skillet`
    - **Workflow filename:** `npm-publish.yaml`
-   - **Environment name:** *(leave blank)*
-3. **Confirm the workflow file** at `.github/workflows/npm-publish.yaml` has `id-token: write` in its `permissions:` block (already set).
+   - **Environment name:** `production` *(must match the `environment:` declared on the publish job)*
+3. **Confirm the workflow file** at `.github/workflows/npm-publish.yaml` has `id-token: write` in its `permissions:` block and a `production` GitHub Environment exists (already set).
+4. Repeat step 2 for the alias package at https://www.npmjs.com/package/@echohello/skillet/access if you also want OIDC publishes for the scoped name.
 
 After this, all future `npm-publish` runs authenticate via OIDC — no token to rotate, leak, or steal.
 

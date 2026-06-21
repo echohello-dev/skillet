@@ -45,7 +45,7 @@ Compared against: [OpenAPM v0.1 manifest schema](https://microsoft.github.io/apm
 | `policy` | Consumer-side org policy | Not supported | Intentional gap | Out of scope. |
 | `compilation` | `apm compile` settings | Not supported | Intentional gap | Out of scope. |
 | `marketplace` | Marketplace authoring block | Not supported | Intentional gap | Out of scope. |
-| `sklt install` | `apm install` equivalent | Implemented | Partial | No `--frozen`, `--update`, or transitive resolution yet. |
+| `skillet install` | `apm install` equivalent | Implemented | Partial | No `--frozen`, `--update`, or transitive resolution yet. |
 | Lockfile | `apm.lock.yaml` | `skillet.lock.yaml` | Partial | Field names aligned where practical; may adopt `apm.lock.yaml` in future ADR. |
 
 ## Decisions
