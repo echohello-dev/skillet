@@ -10,7 +10,7 @@ function main(): void {
   const outputPath = path.resolve(readArg(args, "--output") ?? "packaging/homebrew/skillet.rb");
   const releaseUrlBase =
     readArg(args, "--release-url-base") ??
-    `https://github.com/echohello-dev/skillet/releases/download/v${version}`;
+    `https://github.com/echohello-dev/skillet/releases/download/getskillet-v${version}`;
 
   if (!fs.existsSync(checksumsPath)) {
     throw new Error(`Checksums file not found: ${checksumsPath}`);

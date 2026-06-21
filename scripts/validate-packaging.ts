@@ -13,7 +13,7 @@ function main(): void {
   const packagingRoot = path.resolve(readArg(args, "--packaging-root") ?? "packaging");
   const releaseUrlBase =
     readArg(args, "--release-url-base") ??
-    `https://github.com/echohello-dev/skillet/releases/download/v${version}`;
+    `https://github.com/echohello-dev/skillet/releases/download/getskillet-v${version}`;
 
   if (!fs.existsSync(checksumsPath)) {
     throw new Error(`Checksums file not found: ${checksumsPath}`);
