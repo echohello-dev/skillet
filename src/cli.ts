@@ -41,7 +41,7 @@ const COMMAND_HELP: Record<CommandName, string> = {
   "generate-lock": "Generate skillet.lock.yaml",
 };
 
-const cli = cac("sklt");
+const cli = cac("skillet");
 const GLOBAL_FLAGS = new Set(["-y", "--yes", "--verbose", "-v", "--version", "-h", "--help"]);
 
 cli
@@ -131,6 +131,18 @@ function findUnknownGlobalFlag(argv: string[]): string | undefined {
 
 const rawArgs = process.argv.slice(2);
 const unknownGlobalFlag = findUnknownGlobalFlag(rawArgs);
+
+// Support `sklt` as a shorthand alias for the default `skillet` command.
+// npm installs typically symlink both `bin.skillet` and `bin.sklt` (via the
+// `bin` field), so the same entry file is reached under either name. Detect
+// which one invoked us and rewrite `cli.name` so help/version output and
+// command examples reflect the invoked name.
+if (process.argv[1]) {
+  const invokedName = process.argv[1].split("/").pop()?.split("\\").pop();
+  if (invokedName === "sklt") {
+    (cli as unknown as { name: string }).name = "sklt";
+  }
+}
 
 if (unknownGlobalFlag) {
   console.error(`Unknown option: ${unknownGlobalFlag}`);

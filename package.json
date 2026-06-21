@@ -11,6 +11,7 @@
     "README.md"
   ],
   "bin": {
+    "skillet": "dist/npm/cli.js",
     "sklt": "dist/npm/cli.js"
   },
   "scripts": {
