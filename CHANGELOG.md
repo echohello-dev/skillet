@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/echohello-dev/skillet/compare/getskillet-v1.1.0...getskillet-v1.1.1) (2026-06-21)
+
+
+### Bug Fixes
+
+* **packaging:** use correct release tag in download URLs ([76c799e](https://github.com/echohello-dev/skillet/commit/76c799e9e4569162f12848c92f9d347db17514ba))
+
 ## [1.1.0](https://github.com/echohello-dev/skillet/compare/getskillet-v1.0.0...getskillet-v1.1.0) (2026-06-20)
 
 
