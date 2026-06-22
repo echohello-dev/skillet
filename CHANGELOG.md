@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.1](https://github.com/echohello-dev/skillet/compare/getskillet-v1.1.0...getskillet-v1.1.1) (2026-06-21)
+
+
+### Bug Fixes
+
+* **packaging:** use correct release tag in download URLs ([76c799e](https://github.com/echohello-dev/skillet/commit/76c799e9e4569162f12848c92f9d347db17514ba))
+* **readme:** correct workflow badge extensions to .yaml ([#67](https://github.com/echohello-dev/skillet/issues/67)) ([a8faf90](https://github.com/echohello-dev/skillet/commit/a8faf90e06865d8fae98641919de4f61acbcb839))
+
 ## [1.1.0](https://github.com/echohello-dev/skillet/compare/getskillet-v1.0.0...getskillet-v1.1.0) (2026-06-20)
 
 
